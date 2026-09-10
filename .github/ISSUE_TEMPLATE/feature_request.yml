@@ -1,0 +1,78 @@
+---
+name: ✨ Feature Request
+description: Suggest a new feature or enhancement
+labels: ["enhancement", "needs-discussion"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for suggesting a feature! Great ideas are what make open-source projects grow.
+
+  - type: checkboxes
+    id: prerequisites
+    attributes:
+      label: Prerequisites
+      options:
+        - label: I have searched existing issues and this hasn't been requested before
+          required: true
+        - label: I have read the [CONTRIBUTING guide](../docs/CONTRIBUTING.md)
+          required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Feature Area
+      description: Which part of the dashboard does this feature affect?
+      options:
+        - Wallet (balance, send, transaction history)
+        - Policies (spend limits, session keys, allow-list)
+        - Guardians & Recovery
+        - Onboarding (create / login)
+        - UI / Design / Accessibility
+        - Performance / Infrastructure
+        - Developer Experience (DX)
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem / Motivation
+      description: What problem does this feature solve? What is the user pain point?
+      placeholder: "Currently, users can't see a breakdown of spend limits by time window at a glance..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed Solution
+      description: How would you like this to work? Include UI/UX ideas if relevant.
+      placeholder: "Add a timeline chart on the policies page showing XLM spent per time window vs the limit..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: Any other approaches you considered and why you prefer your proposal
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Perceived Priority
+      options:
+        - 🔴 Critical (blocks real users)
+        - 🟠 High (significantly improves UX)
+        - 🟡 Medium (nice to have)
+        - 🟢 Low (minor polish)
+
+  - type: checkboxes
+    id: contribution
+    attributes:
+      label: Contribution
+      options:
+        - label: I am willing to submit a pull request for this feature

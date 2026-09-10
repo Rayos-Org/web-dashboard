@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 💬 GitHub Discussions — Q&A
+    url: https://github.com/Rayos-Org/web-dashboard/discussions
+    about: Ask questions, share ideas, and discuss the project
+  - name: 🔐 Security Vulnerability
+    url: https://github.com/Rayos-Org/web-dashboard/blob/main/docs/SECURITY.md
+    about: Please report security issues privately via our Security Policy

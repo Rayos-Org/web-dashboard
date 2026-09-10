@@ -1,0 +1,62 @@
+# GitHub issue labels for Guardian Wallet — web-dashboard
+# Apply with: gh label create --force <name> --color <hex> --description <desc>
+
+- name: "bug"
+  color: "d73a4a"
+  description: "Something isn't working"
+
+- name: "enhancement"
+  color: "a2eeef"
+  description: "New feature or request"
+
+- name: "documentation"
+  color: "0075ca"
+  description: "Improvements or additions to documentation"
+
+- name: "good first issue"
+  color: "7057ff"
+  description: "Good for newcomers — limited scope, well-defined"
+
+- name: "help wanted"
+  color: "008672"
+  description: "Extra attention is needed — community help welcome"
+
+- name: "triage"
+  color: "e4e669"
+  description: "Needs triage — not yet confirmed or prioritised"
+
+- name: "needs-discussion"
+  color: "d876e3"
+  description: "Requires design/API discussion before work begins"
+
+- name: "security"
+  color: "ee0701"
+  description: "Security-related issue (use private reporting for vulnerabilities)"
+
+- name: "performance"
+  color: "f9d0c4"
+  description: "Performance improvement"
+
+- name: "ui"
+  color: "fef08a"
+  description: "UI / design / accessibility"
+
+- name: "dependencies"
+  color: "0366d6"
+  description: "Pull requests that update a dependency"
+
+- name: "ci"
+  color: "bfd4f2"
+  description: "CI/CD and build pipeline"
+
+- name: "wontfix"
+  color: "ffffff"
+  description: "This will not be worked on"
+
+- name: "duplicate"
+  color: "cfd3d7"
+  description: "This issue or pull request already exists"
+
+- name: "invalid"
+  color: "e4e669"
+  description: "This doesn't seem right"

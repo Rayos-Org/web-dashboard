@@ -1,0 +1,26 @@
+---
+name: 📖 Documentation
+description: Report missing, incorrect, or unclear documentation
+labels: ["documentation"]
+assignees: []
+body:
+  - type: textarea
+    id: location
+    attributes:
+      label: Where is the documentation problem?
+      placeholder: "`docs/SETUP.md` — the pnpm install step is missing the `--frozen-lockfile` flag"
+    validations:
+      required: true
+
+  - type: textarea
+    id: issue
+    attributes:
+      label: What is wrong or missing?
+      placeholder: The setup guide doesn't mention that `SESSION_SECRET` must be at least 32 characters.
+    validations:
+      required: true
+
+  - type: textarea
+    id: suggestion
+    attributes:
+      label: Suggested fix or addition
