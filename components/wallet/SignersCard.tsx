@@ -1,6 +1,7 @@
 "use client";
 
 import { useWallet } from "@/hooks/useWallet";
+import { Buffer } from "buffer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
@@ -14,15 +15,15 @@ export function SignersCard({ walletAddress }: { walletAddress: string }) {
   return (
     <Card>
       <CardHeader className="pb-3">
-        <CardTitle className="text-sm font-medium text-muted-foreground tracking-wide uppercase flex items-center gap-2">
-          <ShieldCheck className="h-4 w-4" /> Authorized Signers
+        <CardTitle className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+          <ShieldCheck className="size-4 text-primary" /> Authorized Signers
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
         {isLoading && (
           <>
-            <Skeleton className="h-10 w-full" />
-            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-16 w-full" />
+            <Skeleton className="h-16 w-full" />
           </>
         )}
         {!isLoading && signers.length === 0 && (
@@ -33,14 +34,14 @@ export function SignersCard({ walletAddress }: { walletAddress: string }) {
         {!isLoading && signers.map((s, i) => {
           const hex = Buffer.from(s.publicKeyBytes).toString("hex").slice(0, 16) + "…";
           return (
-            <div key={i} className="flex items-center justify-between p-3 rounded-lg border bg-muted/30">
+            <div key={i} className="flex items-center justify-between rounded-xl border border-border bg-muted/30 p-3.5 transition-colors hover:bg-muted/50">
               <div className="flex items-center gap-3">
-                <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                  <KeyRound className="h-4 w-4 text-primary" />
+                <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary/12 text-primary ring-1 ring-primary/20">
+                  <KeyRound className="size-4" />
                 </div>
                 <div>
-                  <p className="text-xs font-mono text-muted-foreground">{hex}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">Passkey signer</p>
+                  <p className="font-mono text-sm">{hex}</p>
+                  <p className="mt-0.5 text-xs text-muted-foreground">Passkey signer</p>
                 </div>
               </div>
               <Badge variant="outline" className="text-xs">

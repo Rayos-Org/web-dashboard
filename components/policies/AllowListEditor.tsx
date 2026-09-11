@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -92,16 +92,14 @@ export function AllowListEditor({ walletAddress }: { walletAddress: string }) {
 
   return (
     <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle>Contract Allow-List</CardTitle>
-            <CardDescription>
-              Restrict wallet to only interact with approved Stellar contracts.
-            </CardDescription>
-          </div>
-          <div className="flex items-center gap-2">
-            <Label htmlFor="allowlist-toggle" className="text-sm">
+      <CardHeader className="border-b pb-6">
+        <CardTitle>Contract Allow-List</CardTitle>
+        <CardDescription>
+          Restrict wallet to only interact with approved Stellar contracts.
+        </CardDescription>
+        <CardAction>
+          <div className="flex items-center gap-3 rounded-xl border border-border bg-muted/40 px-3 py-2">
+            <Label htmlFor="allowlist-toggle" className={isEnabled ? "text-success" : "text-muted-foreground"}>
               {isEnabled ? "Enforcing" : "Disabled"}
             </Label>
             <Switch
@@ -111,7 +109,7 @@ export function AllowListEditor({ walletAddress }: { walletAddress: string }) {
               disabled={isProcessing}
             />
           </div>
-        </div>
+        </CardAction>
       </CardHeader>
 
       <CardContent>
@@ -131,15 +129,15 @@ export function AllowListEditor({ walletAddress }: { walletAddress: string }) {
               </Alert>
             ) : (
               <>
-                <Alert className="border-primary/20 bg-primary/5">
-                  <Shield className="h-4 w-4 text-primary" />
-                  <AlertDescription className="text-primary/80">
+                <Alert className="border-success/30 bg-success/8">
+                  <Shield className="text-success" />
+                  <AlertDescription className="text-foreground/90">
                     Allow-list is <strong>enforcing</strong>. Only listed contracts may be called.
                     {addresses.length === 0 && " All transactions will be blocked until you add at least one address."}
                   </AlertDescription>
                 </Alert>
 
-                <form onSubmit={handleAddAddress} className="flex gap-2">
+                <form onSubmit={handleAddAddress} className="flex flex-col gap-2 sm:flex-row">
                   <Input
                     placeholder="Enter Stellar Contract Address (C...)"
                     value={newAddress}
@@ -154,7 +152,7 @@ export function AllowListEditor({ walletAddress }: { walletAddress: string }) {
                 </form>
 
                 {addresses.length === 0 ? (
-                  <div className="border border-dashed rounded-md py-8 text-center text-sm text-muted-foreground">
+                  <div className="rounded-xl border border-dashed border-border py-10 text-center text-sm text-muted-foreground">
                     No addresses allowed yet. All transactions are blocked.
                   </div>
                 ) : (
@@ -162,19 +160,19 @@ export function AllowListEditor({ walletAddress }: { walletAddress: string }) {
                     {addresses.map((address) => (
                       <div
                         key={address}
-                        className="flex items-center justify-between px-3 py-2.5 border rounded-md bg-muted/30"
+                        className="flex items-center justify-between rounded-xl border border-border bg-muted/30 py-2.5 pl-3.5 pr-2 transition-colors hover:bg-muted/50"
                       >
                         <div className="flex items-center gap-2.5 min-w-0">
                           <Shield className="h-4 w-4 text-primary shrink-0" />
                           <span className="font-mono text-xs truncate">{address}</span>
-                          <Badge variant="outline" className="text-primary border-primary/20 bg-primary/5 text-xs shrink-0">
+                          <Badge variant="outline" className="shrink-0 border-success/30 bg-success/10 text-success">
                             Allowed
                           </Badge>
                         </div>
                         <Button
                           variant="ghost"
-                          size="icon"
-                          className="h-7 w-7 text-destructive hover:text-destructive shrink-0"
+                          size="icon-sm"
+                          className="shrink-0 text-destructive hover:bg-destructive/10 hover:text-destructive"
                           onClick={() => handleRemoveAddress(address)}
                           disabled={isProcessing}
                         >

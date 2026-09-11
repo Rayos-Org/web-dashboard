@@ -24,13 +24,17 @@ export function BalanceCard({ walletAddress }: { walletAddress: string }) {
   };
 
   return (
-    <Card className="overflow-hidden">
-      {/* Gradient bar */}
-      <div className="h-1.5 w-full bg-gradient-to-r from-primary via-amber-400 to-primary/60" />
+    <Card className="relative overflow-hidden">
+      {/* Ambient glow */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -right-20 -top-24 size-64 rounded-full bg-gradient-to-br from-indigo-500/25 via-violet-500/15 to-cyan-400/20 blur-3xl"
+      />
+      <div aria-hidden className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-indigo-500 via-violet-500 to-cyan-400" />
 
-      <CardHeader className="pb-2 pt-5">
+      <CardHeader className="pb-1">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-sm font-medium text-muted-foreground tracking-wide uppercase">
+          <CardTitle className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
             Balance · Testnet
           </CardTitle>
           {!checkingAccount && accountExists === false && (
@@ -39,8 +43,8 @@ export function BalanceCard({ walletAddress }: { walletAddress: string }) {
             </Badge>
           )}
           {!checkingAccount && accountExists && (
-            <Badge variant="secondary" className="text-xs gap-1">
-              ● Active
+            <Badge variant="outline" className="border-success/40 bg-success/10 text-success">
+              <span className="size-1.5 rounded-full bg-success" /> Active
             </Badge>
           )}
         </div>
@@ -49,7 +53,7 @@ export function BalanceCard({ walletAddress }: { walletAddress: string }) {
       <CardContent className="pt-0 space-y-5">
         {isLoading ? (
           <div className="space-y-2">
-            <Skeleton className="h-12 w-40" />
+            <Skeleton className="h-14 w-48" />
             <Skeleton className="h-4 w-24" />
           </div>
         ) : isError ? (
@@ -59,34 +63,35 @@ export function BalanceCard({ walletAddress }: { walletAddress: string }) {
           </div>
         ) : (
           <div>
-            <p className="text-5xl font-extrabold tracking-tight">
+            <p className="text-5xl font-extrabold tracking-tight sm:text-6xl">
               {formatXLM(balance)}
-              <span className="text-xl font-medium text-muted-foreground ml-2">XLM</span>
+              <span className="ml-2 text-xl font-medium text-muted-foreground">XLM</span>
             </p>
           </div>
         )}
 
         {/* Wallet address row */}
-        <div className="flex items-center gap-2 p-3 rounded-lg bg-muted/40 border border-border/50">
-          <code className="text-xs font-mono text-muted-foreground flex-1 truncate">{shortAddress}</code>
-          <button onClick={copyAddress} className="text-muted-foreground hover:text-foreground transition-colors shrink-0" title="Copy address">
-            <Copy className="h-3.5 w-3.5" />
-          </button>
+        <div className="flex items-center gap-2 rounded-xl border border-border bg-muted/40 py-2 pl-3.5 pr-1.5">
+          <code className="flex-1 truncate font-mono text-sm text-muted-foreground">{shortAddress}</code>
+          <Button variant="ghost" size="icon-sm" onClick={copyAddress} title="Copy address" aria-label="Copy address">
+            <Copy />
+          </Button>
           <a
             href={`https://stellar.expert/explorer/testnet/account/${walletAddress}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-muted-foreground hover:text-primary transition-colors shrink-0"
+            className="flex size-8.5 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-primary"
             title="View on explorer"
+            aria-label="View on explorer"
           >
-            <ExternalLink className="h-3.5 w-3.5" />
+            <ExternalLink className="size-4" />
           </a>
         </div>
 
         {!checkingAccount && accountExists === false && (
-          <Alert className="border-amber-500/30 bg-amber-500/10 text-amber-800 dark:text-amber-200">
-            <AlertTriangle className="h-4 w-4 text-amber-500" />
-            <AlertDescription className="text-xs">
+          <Alert className="border-warning/40 bg-warning/10 text-foreground">
+            <AlertTriangle className="text-warning" />
+            <AlertDescription className="text-sm">
               Fund this address on{" "}
               <a
                 href={`https://friendbot.stellar.org?addr=${walletAddress}`}
@@ -103,12 +108,8 @@ export function BalanceCard({ walletAddress }: { walletAddress: string }) {
 
         <div className="flex gap-3">
           <QuickSend walletAddress={walletAddress} />
-          <Button
-            variant="outline"
-            className="flex-1 gap-2"
-            onClick={copyAddress}
-          >
-            <ArrowDownLeft className="h-4 w-4" /> Receive
+          <Button variant="outline" className="flex-1" onClick={copyAddress}>
+            <ArrowDownLeft data-icon="inline-start" /> Receive
           </Button>
         </div>
       </CardContent>

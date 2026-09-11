@@ -1,7 +1,8 @@
 "use client";
 
 import { useTransactions, HorizonOperation } from "@/hooks/useTransactions";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
@@ -15,10 +16,10 @@ function operationIcon(type: string, walletAddress: string, from?: string) {
       return isSend ? (
         <ArrowUpRight className="h-4 w-4 text-destructive" />
       ) : (
-        <ArrowDownLeft className="h-4 w-4 text-primary" />
+        <ArrowDownLeft className="h-4 w-4 text-success" />
       );
     case "create_account":
-      return <ArrowDownLeft className="h-4 w-4 text-primary" />;
+      return <ArrowDownLeft className="h-4 w-4 text-success" />;
     default:
       return <RefreshCw className="h-4 w-4 text-muted-foreground" />;
   }
@@ -51,17 +52,15 @@ export function TransactionList({ walletAddress }: { walletAddress: string }) {
 
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between pb-3">
-        <CardTitle className="text-lg">Recent Activity</CardTitle>
-        <button
-          onClick={() => refetch()}
-          className="text-muted-foreground hover:text-foreground transition-colors"
-          title="Refresh"
-        >
-          <RefreshCw className="h-4 w-4" />
-        </button>
+      <CardHeader className="border-b pb-5">
+        <CardTitle>Recent Activity</CardTitle>
+        <CardAction>
+          <Button variant="outline" size="sm" onClick={() => refetch()} title="Refresh">
+            <RefreshCw data-icon="inline-start" /> Refresh
+          </Button>
+        </CardAction>
       </CardHeader>
-      <CardContent className="p-0">
+      <CardContent className="px-0">
         {isLoading && (
           <div className="space-y-0 divide-y">
             {Array.from({ length: 4 }).map((_, i) => (
@@ -85,7 +84,7 @@ export function TransactionList({ walletAddress }: { walletAddress: string }) {
 
         {!isLoading && !isError && txs && txs.length === 0 && (
           <div className="flex flex-col items-center justify-center py-12 text-center text-muted-foreground">
-            <Clock className="h-10 w-10 mb-3 opacity-20" />
+            <div className="mb-4 flex size-14 items-center justify-center rounded-full bg-muted"><Clock className="size-6 opacity-50" /></div>
             <p className="font-medium">No activity yet</p>
             <p className="text-sm mt-1">Transactions will appear here once your wallet is funded.</p>
           </div>
@@ -97,11 +96,11 @@ export function TransactionList({ walletAddress }: { walletAddress: string }) {
               const isSend = op.from === walletAddress;
               const amount = operationAmount(op);
               return (
-                <div key={op.id} className="flex items-center gap-4 px-6 py-4 hover:bg-muted/30 transition-colors">
-                  <div className={`flex h-9 w-9 items-center justify-center rounded-full shrink-0 ${
+                <div key={op.id} className="flex items-center gap-4 px-6 py-4 transition-colors hover:bg-muted/30">
+                  <div className={`flex size-10 shrink-0 items-center justify-center rounded-full ring-1 ${
                     op.type === "payment" && isSend
-                      ? "bg-destructive/10"
-                      : "bg-primary/10"
+                      ? "bg-destructive/10 ring-destructive/20"
+                      : "bg-success/10 ring-success/20"
                   }`}>
                     {operationIcon(op.type, walletAddress, op.from)}
                   </div>
@@ -114,7 +113,7 @@ export function TransactionList({ walletAddress }: { walletAddress: string }) {
                   <div className="text-right shrink-0">
                     {amount && (
                       <span className={`text-sm font-semibold ${
-                        op.type === "payment" && isSend ? "text-destructive" : "text-primary"
+                        op.type === "payment" && isSend ? "text-destructive" : "text-success"
                       }`}>
                         {op.type === "payment" && isSend ? "−" : "+"}{amount}
                       </span>

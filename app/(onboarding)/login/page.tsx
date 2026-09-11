@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { PasskeyPrompt } from "@/components/wallet/PasskeyPrompt";
 import { toast } from "sonner";
 import { startAuthentication } from "@simplewebauthn/browser";
+import { Fingerprint, Loader2 } from "lucide-react";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -62,23 +63,24 @@ export default function LoginPage() {
   };
 
   return (
-    <Card className="border-0 shadow-none bg-transparent w-full">
+    <Card className="w-full gap-6 border-0 bg-transparent py-0 ring-0 shadow-none!">
       <CardHeader className="px-0 pt-0">
-        <CardTitle className="text-2xl">Sign In</CardTitle>
+        <CardTitle className="text-2xl sm:text-3xl">Welcome back</CardTitle>
         <CardDescription>
           Access your Guardian Wallet using your passkey.
         </CardDescription>
       </CardHeader>
-      <CardContent className="px-0">
+      <CardContent className="px-0 pt-2">
         <PasskeyPrompt isProcessing={isProcessing} message="Ready to authenticate..." />
       </CardContent>
-      <CardFooter className="px-0 pb-0 flex flex-col gap-2">
-        <Button 
-          className="w-full" 
+      <CardFooter className="border-0 bg-transparent px-0 pb-0 flex flex-col gap-2">
+        <Button
+          size="lg"
+          className="w-full"
           onClick={handleLogin}
           disabled={isProcessing}
         >
-          {isProcessing ? "Signing in..." : "Sign in with Passkey"}
+          {isProcessing ? <><Loader2 className="animate-spin" data-icon="inline-start" /> Signing in…</> : <><Fingerprint data-icon="inline-start" /> Sign in with Passkey</>}
         </Button>
         <Button 
           variant="ghost" 

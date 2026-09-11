@@ -8,10 +8,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { PasskeyPrompt } from "@/components/wallet/PasskeyPrompt";
-import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "sonner";
-import { Copy, CheckCircle, ExternalLink } from "lucide-react";
+import { Copy, CheckCircle, ExternalLink, ArrowRight, Fingerprint, Loader2 } from "lucide-react";
 
 export default function CreateWalletPage() {
   const [step, setStep] = useState<1 | 2 | 3>(1);
@@ -69,14 +68,14 @@ export default function CreateWalletPage() {
   return (
     <div className="w-full">
       {step === 1 && (
-        <Card className="border-0 shadow-none bg-transparent">
+        <Card className="w-full gap-6 border-0 bg-transparent py-0 ring-0 shadow-none!">
           <CardHeader className="px-0 pt-0">
-            <CardTitle className="text-2xl">Create your Guardian Wallet</CardTitle>
+            <CardTitle className="text-2xl sm:text-3xl">Create your Guardian Wallet</CardTitle>
             <CardDescription>
               We use passkeys to secure your wallet. No seed phrases, no passwords.
             </CardDescription>
           </CardHeader>
-          <CardContent className="px-0 space-y-4">
+          <CardContent className="px-0 space-y-4 pt-2">
             <div className="space-y-2">
               <Label htmlFor="name">Wallet Name (e.g. Personal)</Label>
               <Input 
@@ -88,22 +87,23 @@ export default function CreateWalletPage() {
               />
             </div>
           </CardContent>
-          <CardFooter className="px-0 pb-0">
-            <Button 
-              className="w-full" 
+          <CardFooter className="border-0 bg-transparent px-0 pb-0">
+            <Button
+              size="lg"
+              className="w-full"
               onClick={() => setStep(2)}
               disabled={!name.trim()}
             >
-              Continue
+              Continue <ArrowRight data-icon="inline-end" />
             </Button>
           </CardFooter>
         </Card>
       )}
 
       {step === 2 && (
-        <Card className="border-0 shadow-none bg-transparent">
+        <Card className="w-full gap-6 border-0 bg-transparent py-0 ring-0 shadow-none!">
           <CardHeader className="px-0 pt-0">
-            <CardTitle className="text-2xl">Create Passkey</CardTitle>
+            <CardTitle className="text-2xl sm:text-3xl">Create Passkey</CardTitle>
             <CardDescription>
               Your device will ask you to authenticate (Face ID, Touch ID, etc).
             </CardDescription>
@@ -111,13 +111,14 @@ export default function CreateWalletPage() {
           <CardContent className="px-0">
             <PasskeyPrompt isProcessing={isProcessing} />
           </CardContent>
-          <CardFooter className="px-0 pb-0 flex flex-col gap-2">
-            <Button 
-              className="w-full" 
+          <CardFooter className="border-0 bg-transparent px-0 pb-0 flex flex-col gap-2">
+            <Button
+              size="lg"
+              className="w-full"
               onClick={handleCreatePasskey}
               disabled={isProcessing}
             >
-              {isProcessing ? "Creating..." : "Create Passkey"}
+              {isProcessing ? <><Loader2 className="animate-spin" data-icon="inline-start" /> Creating…</> : <><Fingerprint data-icon="inline-start" /> Create Passkey</>}
             </Button>
             <Button 
               variant="ghost" 
@@ -132,20 +133,20 @@ export default function CreateWalletPage() {
       )}
 
       {step === 3 && (
-        <Card className="border-0 shadow-none bg-transparent">
+        <Card className="w-full gap-6 border-0 bg-transparent py-0 ring-0 shadow-none!">
           <CardHeader className="px-0 pt-0">
             <div className="flex items-center gap-3 mb-1">
-              <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                <CheckCircle className="h-5 w-5 text-primary" />
+              <div className="flex size-11 items-center justify-center rounded-full bg-success/12 text-success ring-1 ring-success/30">
+                <CheckCircle className="size-5" />
               </div>
-              <CardTitle className="text-2xl text-primary">Wallet Deployed!</CardTitle>
+              <CardTitle className="text-2xl sm:text-3xl">Wallet Deployed!</CardTitle>
             </div>
             <CardDescription>
               Your passkey-secured smart wallet is live on Stellar testnet.
             </CardDescription>
           </CardHeader>
           <CardContent className="px-0 space-y-4">
-            <div className="p-4 bg-muted/50 rounded-lg border space-y-2">
+            <div className="space-y-2 rounded-xl border border-border bg-muted/40 p-4">
               <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Your Wallet Address</p>
               <div className="flex items-center gap-2">
                 <code className="font-mono text-sm break-all flex-1">{walletAddress}</code>
@@ -163,14 +164,14 @@ export default function CreateWalletPage() {
                 </a>
               </div>
             </div>
-            <Alert className="border-amber-500/30 bg-amber-500/5">
-              <AlertDescription className="text-xs">
+            <Alert className="border-warning/40 bg-warning/10">
+              <AlertDescription className="text-sm text-foreground/90">
                 Fund your wallet using{" "}
                 <a
                   href={`https://friendbot.stellar.org?addr=${walletAddress}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="underline font-medium text-amber-700 dark:text-amber-400"
+                  className="font-medium text-warning underline"
                 >
                   Stellar Friendbot
                 </a>{" "}
@@ -178,13 +179,14 @@ export default function CreateWalletPage() {
               </AlertDescription>
             </Alert>
           </CardContent>
-          <CardFooter className="px-0 pb-0">
+          <CardFooter className="border-0 bg-transparent px-0 pb-0">
             <Button
+              size="lg"
               className="w-full"
               onClick={handleFinish}
               disabled={isProcessing}
             >
-              {isProcessing ? "Signing in..." : "Go to Dashboard →"}
+              {isProcessing ? "Signing in…" : <>Go to Dashboard <ArrowRight data-icon="inline-end" /></>}
             </Button>
           </CardFooter>
         </Card>

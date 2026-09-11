@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { ShieldCheck, Loader2 } from "lucide-react";
 import { PasskeyPrompt } from "@/components/wallet/PasskeyPrompt";
 import { startAuthentication } from "@simplewebauthn/browser";
+import { Buffer } from "buffer";
 
 const WINDOWS = [
   { label: "1 Hour", value: "3600" },
@@ -72,20 +73,20 @@ export function SpendLimitForm({ walletAddress }: { walletAddress: string }) {
   return (
     <form onSubmit={handleSubmit}>
       <Card>
-        <CardHeader>
+        <CardHeader className="border-b pb-6">
           <CardTitle>Set Spend Limit</CardTitle>
           <CardDescription>
             Configure a rolling cap enforced by the smart contract policy module.
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-5">
           {showPasskey ? (
             <PasskeyPrompt isProcessing={isProcessing} message="Sign policy update with your passkey…" />
           ) : (
             <>
               <div className="space-y-2">
                 <Label>Asset</Label>
-                <Select value={token} disabled>
+                <Select value={token} items={{ [NATIVE_XLM_CONTRACT_ID]: "XLM (Native)" }} disabled>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -107,7 +108,7 @@ export function SpendLimitForm({ walletAddress }: { walletAddress: string }) {
               </div>
               <div className="space-y-2">
                 <Label>Time Window</Label>
-                <Select value={window} onValueChange={(v) => v && setWindow(v)}>
+                <Select value={window} onValueChange={(v) => v && setWindow(v)} items={WINDOWS}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -123,7 +124,7 @@ export function SpendLimitForm({ walletAddress }: { walletAddress: string }) {
         </CardContent>
         <CardFooter>
           {!showPasskey && (
-            <Button type="submit" disabled={!amount || isProcessing} className="w-full">
+            <Button type="submit" size="lg" disabled={!amount || isProcessing} className="w-full">
               {isProcessing ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Setting…</> : "Set Spend Limit"}
             </Button>
           )}

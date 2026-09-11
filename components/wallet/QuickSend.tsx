@@ -91,11 +91,11 @@ export function QuickSend({ walletAddress }: QuickSendProps) {
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogTrigger render={
-        <Button className="flex-1 gap-2">
-          <ArrowUpRight className="h-4 w-4" /> Send
+        <Button className="flex-1">
+          <ArrowUpRight data-icon="inline-start" /> Send
         </Button>
       } />
-      <DialogContent className="sm:max-w-md">
+      <DialogContent>
         <DialogHeader>
           <DialogTitle>Send XLM</DialogTitle>
           <DialogDescription>Send XLM to any Stellar address.</DialogDescription>
@@ -136,8 +136,8 @@ export function QuickSend({ walletAddress }: QuickSendProps) {
 
         {step === "submitted" && (
           <div className="py-8 flex flex-col items-center gap-4 text-center">
-            <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center">
-              <CheckCircle2 className="h-8 w-8 text-primary" />
+            <div className="flex size-16 items-center justify-center rounded-full bg-success/12 text-success ring-1 ring-success/30">
+              <CheckCircle2 className="size-8" />
             </div>
             <div>
               <p className="font-semibold text-lg">Submitted!</p>

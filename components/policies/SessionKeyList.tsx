@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useSessionKeys, useCreateSessionKey, useRevokeSessionKey } from "@/hooks/usePolicies";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -87,14 +87,13 @@ export function SessionKeyList({ walletAddress }: { walletAddress: string }) {
 
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
-        <div>
-          <CardTitle>Session Keys</CardTitle>
-          <CardDescription>Time-limited sub-keys for dApp interactions.</CardDescription>
-        </div>
+      <CardHeader className="border-b pb-6">
+        <CardTitle>Session Keys</CardTitle>
+        <CardDescription>Time-limited sub-keys for dApp interactions.</CardDescription>
+        <CardAction>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger render={
-            <Button size="sm" className="gap-2"><Plus className="h-4 w-4" /> New Session</Button>
+            <Button><Plus data-icon="inline-start" /> New Session</Button>
           } />
           <DialogContent>
             <DialogHeader>
@@ -139,16 +138,17 @@ export function SessionKeyList({ walletAddress }: { walletAddress: string }) {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+        </CardAction>
       </CardHeader>
       <CardContent>
         {isLoading && (
           <div className="space-y-2">
-            <Skeleton className="h-10 w-full" />
-            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-12 w-full" />
+            <Skeleton className="h-12 w-full" />
           </div>
         )}
         {!isLoading && sessions && sessions.length > 0 ? (
-          <div className="border rounded-md">
+          <div className="overflow-hidden rounded-xl border border-border">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -180,7 +180,7 @@ export function SessionKeyList({ walletAddress }: { walletAddress: string }) {
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="text-destructive hover:text-destructive"
+                          className="text-destructive hover:bg-destructive/10 hover:text-destructive"
                           onClick={() => handleRevoke(session.sessionId)}
                           disabled={isExpired || revokeSession.isPending}
                         >
@@ -194,8 +194,8 @@ export function SessionKeyList({ walletAddress }: { walletAddress: string }) {
             </Table>
           </div>
         ) : !isLoading ? (
-          <div className="flex flex-col items-center justify-center py-12 text-center text-muted-foreground border border-dashed rounded-lg">
-            <Key className="h-12 w-12 mb-4 opacity-20" />
+          <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border py-14 text-center text-muted-foreground">
+            <div className="mb-4 flex size-14 items-center justify-center rounded-full bg-muted"><Key className="size-6 opacity-50" /></div>
             <p className="font-medium">No active session keys</p>
             <p className="text-sm mt-1">Create one to authorize dApp connections.</p>
           </div>

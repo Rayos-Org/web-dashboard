@@ -4,6 +4,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SpendLimitForm } from "@/components/policies/SpendLimitForm";
 import { SessionKeyList } from "@/components/policies/SessionKeyList";
 import { AllowListEditor } from "@/components/policies/AllowListEditor";
+import { PageHeader } from "@/components/layout/PageHeader";
+import { Gauge, KeyRound, ListChecks } from "lucide-react";
 
 export default async function PoliciesPage() {
   const session = await getSession();
@@ -13,31 +15,38 @@ export default async function PoliciesPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight mb-1">Policies</h1>
-        <p className="text-muted-foreground">
-          Configure spend limits, session keys, and allow-lists to secure your wallet.
-        </p>
-      </div>
+    <div className="space-y-8">
+      <PageHeader
+        title="Policies"
+        description="Configure spend limits, session keys, and allow-lists to secure your wallet."
+      />
 
-      <Tabs defaultValue="spend-limits" className="w-full mt-6">
-        <TabsList className="grid w-full md:w-[400px] grid-cols-3">
-          <TabsTrigger value="spend-limits">Spend Limits</TabsTrigger>
-          <TabsTrigger value="session-keys">Session Keys</TabsTrigger>
-          <TabsTrigger value="allow-list">Allow-List</TabsTrigger>
+      <Tabs defaultValue="spend-limits" className="w-full gap-6">
+        <TabsList className="grid w-full grid-cols-3 sm:inline-flex sm:w-fit">
+          <TabsTrigger value="spend-limits">
+            <Gauge data-icon="inline-start" />
+            <span className="hidden sm:inline">Spend Limits</span>
+            <span className="sm:hidden">Limits</span>
+          </TabsTrigger>
+          <TabsTrigger value="session-keys">
+            <KeyRound data-icon="inline-start" />
+            <span className="hidden sm:inline">Session Keys</span>
+            <span className="sm:hidden">Sessions</span>
+          </TabsTrigger>
+          <TabsTrigger value="allow-list">
+            <ListChecks data-icon="inline-start" />
+            Allow-List
+          </TabsTrigger>
         </TabsList>
-        <div className="mt-6">
-          <TabsContent value="spend-limits" className="m-0">
-            <SpendLimitForm walletAddress={session.walletAddress} />
-          </TabsContent>
-          <TabsContent value="session-keys" className="m-0">
-            <SessionKeyList walletAddress={session.walletAddress} />
-          </TabsContent>
-          <TabsContent value="allow-list" className="m-0">
-            <AllowListEditor walletAddress={session.walletAddress} />
-          </TabsContent>
-        </div>
+        <TabsContent value="spend-limits">
+          <SpendLimitForm walletAddress={session.walletAddress} />
+        </TabsContent>
+        <TabsContent value="session-keys">
+          <SessionKeyList walletAddress={session.walletAddress} />
+        </TabsContent>
+        <TabsContent value="allow-list">
+          <AllowListEditor walletAddress={session.walletAddress} />
+        </TabsContent>
       </Tabs>
     </div>
   );

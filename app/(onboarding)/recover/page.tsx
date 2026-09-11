@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
-import { ShieldAlert, Copy, CheckCircle, Clock, Loader2 } from "lucide-react";
+import { ShieldAlert, Copy, CheckCircle, Clock, Loader2, ArrowRight } from "lucide-react";
 import { PasskeyPrompt } from "@/components/wallet/PasskeyPrompt";
 import { startRegistration } from "@simplewebauthn/browser";
 
@@ -92,24 +92,24 @@ export default function RecoverWalletPage() {
   const isApproved = proposalStatus?.status === "approved";
 
   return (
-    <Card className="border-0 shadow-none bg-transparent w-full">
+    <Card className="w-full gap-6 border-0 bg-transparent py-0 ring-0 shadow-none!">
       <CardHeader className="px-0 pt-0">
         <div className="flex items-center gap-3 mb-2">
-          <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-            <ShieldAlert className="h-5 w-5 text-primary" />
+          <div className="flex size-11 items-center justify-center rounded-full bg-primary/12 text-primary ring-1 ring-primary/25">
+            <ShieldAlert className="size-5" />
           </div>
           <div>
-            <CardTitle className="text-2xl">Recover Wallet</CardTitle>
+            <CardTitle className="text-2xl sm:text-3xl">Recover Wallet</CardTitle>
             <CardDescription>Regain access using your recovery guardians</CardDescription>
           </div>
         </div>
 
         {/* Progress steps */}
-        <div className="flex items-center gap-2 mt-4">
+        <div className="mt-5 flex flex-wrap items-center gap-2">
           {[1, 2, 3].map((s) => (
             <div key={s} className="flex items-center gap-2">
-              <div className={`h-7 w-7 rounded-full flex items-center justify-center text-xs font-bold border-2 transition-colors ${
-                step > s ? "bg-primary border-primary text-white" :
+              <div className={`flex size-8 items-center justify-center rounded-full border-2 text-xs font-bold transition-colors ${
+                step > s ? "border-primary bg-primary text-primary-foreground" :
                 step === s ? "border-primary text-primary" :
                 "border-muted-foreground/30 text-muted-foreground"
               }`}>
@@ -157,8 +157,8 @@ export default function RecoverWalletPage() {
           <div className="space-y-5">
             {isComplete ? (
               <div className="flex flex-col items-center gap-3 py-6 text-center">
-                <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center">
-                  <CheckCircle className="h-8 w-8 text-primary" />
+                <div className="flex size-16 items-center justify-center rounded-full bg-success/12 text-success ring-1 ring-success/30">
+                  <CheckCircle className="size-8" />
                 </div>
                 <p className="text-xl font-bold">Recovery Complete</p>
                 <p className="text-sm text-muted-foreground">
@@ -167,7 +167,7 @@ export default function RecoverWalletPage() {
               </div>
             ) : (
               <>
-                <div className="p-4 rounded-lg border bg-muted/40 space-y-3">
+                <div className="space-y-3 rounded-xl border border-border bg-muted/40 p-4">
                   <p className="text-sm font-medium">Share this link with your guardians</p>
                   <div className="flex gap-2">
                     <Input readOnly value={shareableLink} className="font-mono text-xs" />
@@ -222,14 +222,14 @@ export default function RecoverWalletPage() {
         )}
       </CardContent>
 
-      <CardFooter className="px-0 pb-0 pt-4 flex flex-col gap-2">
+      <CardFooter className="border-0 bg-transparent px-0 pb-0 pt-4 flex flex-col gap-2">
         {step === 1 && (
-          <Button className="w-full" onClick={handleStartRecovery} disabled={!walletAddress.trim()}>
-            Start Recovery →
+          <Button size="lg" className="w-full" onClick={handleStartRecovery} disabled={!walletAddress.trim()}>
+            Start Recovery <ArrowRight data-icon="inline-end" />
           </Button>
         )}
         {step === 3 && !isComplete && isApproved && (
-          <Button className="w-full">
+          <Button size="lg" className="w-full">
             Execute Recovery
           </Button>
         )}

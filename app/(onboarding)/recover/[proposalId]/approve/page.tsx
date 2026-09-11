@@ -75,8 +75,8 @@ export default function ApproveRecoveryPage({
   if (done) {
     return (
       <div className="flex flex-col items-center gap-5 py-10 text-center w-full">
-        <div className="h-20 w-20 rounded-full bg-primary/10 flex items-center justify-center">
-          <ShieldCheck className="h-10 w-10 text-primary" />
+        <div className="flex size-20 items-center justify-center rounded-full bg-success/12 text-success ring-1 ring-success/30">
+          <ShieldCheck className="size-10" />
         </div>
         <h2 className="text-2xl font-bold">Approval Submitted</h2>
         <p className="text-muted-foreground max-w-sm">
@@ -88,9 +88,9 @@ export default function ApproveRecoveryPage({
   }
 
   return (
-    <Card className="border-0 shadow-none bg-transparent w-full">
+    <Card className="w-full gap-6 border-0 bg-transparent py-0 ring-0 shadow-none!">
       <CardHeader className="px-0 pt-0">
-        <CardTitle className="text-2xl">Guardian Approval</CardTitle>
+        <CardTitle className="text-2xl sm:text-3xl">Guardian Approval</CardTitle>
         <CardDescription>
           You have been asked to approve a wallet recovery as a trusted guardian.
         </CardDescription>
@@ -98,7 +98,7 @@ export default function ApproveRecoveryPage({
 
       <CardContent className="px-0 space-y-5">
         {/* Proposal summary */}
-        <div className="rounded-lg border bg-muted/40 divide-y">
+        <div className="divide-y rounded-xl border border-border bg-muted/40">
           <div className="flex items-center justify-between px-4 py-3 text-sm">
             <span className="text-muted-foreground font-medium">Proposal ID</span>
             <code className="font-mono text-xs truncate max-w-[180px]">{proposalId}</code>
@@ -149,9 +149,10 @@ export default function ApproveRecoveryPage({
         )}
       </CardContent>
 
-      <CardFooter className="px-0 pb-0 pt-4">
+      <CardFooter className="border-0 bg-transparent px-0 pb-0 pt-4">
         {!showPasskey && (
           <Button
+            size="lg"
             className="w-full"
             onClick={handleApprove}
             disabled={

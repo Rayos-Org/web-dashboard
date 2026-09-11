@@ -53,22 +53,21 @@ export function RecoveryStatusBanner({ walletAddress }: { walletAddress: string 
   const approvalsCount = activeProposal.approvals.length;
 
   return (
-    <Alert variant="destructive" className="border-destructive/40 bg-destructive/5">
-      <ShieldAlert className="h-5 w-5" />
+    <Alert variant="destructive" className="border-destructive/40 bg-destructive/8 shadow-elevated">
+      <ShieldAlert className="size-5" />
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <AlertTitle className="text-base mb-0.5">Active Recovery in Progress</AlertTitle>
           <AlertDescription>
             A recovery request for this wallet is pending.
             {" "}
-            <Badge variant="outline" className="ml-1">
+            <Badge variant="outline" className="ml-1 border-destructive/40 text-destructive">
               {approvalsCount} approval{approvalsCount !== 1 ? "s" : ""}
             </Badge>
           </AlertDescription>
         </div>
         <Button
           variant="destructive"
-          size="sm"
           onClick={handleCancel}
           disabled={isCancelling}
           className="shrink-0"

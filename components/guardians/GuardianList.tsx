@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useWallet } from "@/hooks/useWallet";
 import { walletSdk } from "@/lib/sdk-client";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/dialog";
 import { PasskeyPrompt } from "@/components/wallet/PasskeyPrompt";
 import { startAuthentication } from "@simplewebauthn/browser";
+import { Buffer } from "buffer";
 
 export function GuardianList({ walletAddress }: { walletAddress: string }) {
   // Guardians on the smart contract are represented as signers
@@ -101,16 +102,15 @@ export function GuardianList({ walletAddress }: { walletAddress: string }) {
 
   return (
     <Card>
-      <CardHeader className="flex flex-row items-start justify-between">
-        <div>
-          <CardTitle>Recovery Guardians</CardTitle>
-          <CardDescription>
-            Trusted signers who can authorize wallet recovery.
-          </CardDescription>
-        </div>
+      <CardHeader className="border-b pb-6">
+        <CardTitle>Recovery Guardians</CardTitle>
+        <CardDescription>
+          Trusted signers who can authorize wallet recovery.
+        </CardDescription>
+        <CardAction>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger render={
-            <Button size="sm" className="gap-2"><Plus className="h-4 w-4" /> Add Guardian</Button>
+            <Button><Plus data-icon="inline-start" /> Add Guardian</Button>
           } />
           <DialogContent>
             <DialogHeader>
@@ -159,16 +159,17 @@ export function GuardianList({ walletAddress }: { walletAddress: string }) {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+        </CardAction>
       </CardHeader>
 
       <CardContent className="space-y-4">
         {/* Threshold display */}
-        <div className="flex items-center justify-between p-4 bg-muted/40 rounded-lg border border-dashed">
+        <div className="flex items-center justify-between gap-4 rounded-xl border border-dashed border-primary/30 bg-primary/5 p-4">
           <div>
             <p className="text-sm font-medium">Recovery Threshold</p>
             <p className="text-xs text-muted-foreground mt-0.5">Minimum approvals required to execute recovery</p>
           </div>
-          <Badge variant="outline" className="text-base px-4 py-1 font-mono">
+          <Badge variant="outline" className="h-9 border-primary/40 bg-card px-4 font-mono text-base text-primary">
             {threshold} of {signers.length}
           </Badge>
         </div>
@@ -190,28 +191,28 @@ export function GuardianList({ walletAddress }: { walletAddress: string }) {
         )}
 
         {!isLoading && signers.length > 0 && (
-          <div className="border rounded-md divide-y">
+          <div className="divide-y overflow-hidden rounded-xl border border-border">
             {signers.map((signer, idx) => {
               const hex = Buffer.from(signer.publicKeyBytes).toString("hex");
               const short = `${hex.slice(0, 12)}…${hex.slice(-8)}`;
               return (
                 <div
                   key={idx}
-                  className="flex items-center justify-between px-4 py-3 hover:bg-muted/20 transition-colors"
+                  className="flex items-center justify-between px-4 py-3.5 transition-colors hover:bg-muted/30"
                 >
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                      <Users className="h-4 w-4 text-primary" />
+                    <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary/12 text-primary ring-1 ring-primary/20">
+                      <Users className="size-4" />
                     </div>
                     <div className="min-w-0">
-                      <p className="font-mono text-xs text-muted-foreground truncate">{short}</p>
+                      <p className="truncate font-mono text-sm">{short}</p>
                       <Badge variant="secondary" className="text-xs mt-0.5">Weight {signer.weight}</Badge>
                     </div>
                   </div>
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="text-destructive hover:text-destructive shrink-0"
+                    className="shrink-0 text-destructive hover:bg-destructive/10 hover:text-destructive"
                     onClick={() => handleRemoveGuardian(idx)}
                     disabled={isProcessing || signers.length <= 1}
                     title={signers.length <= 1 ? "Cannot remove last guardian" : "Remove guardian"}
