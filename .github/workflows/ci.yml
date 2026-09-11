@@ -2,41 +2,55 @@ name: CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
+
+env:
+  # Dummy values so lib/config.ts validation passes during build/typecheck
+  NEXT_PUBLIC_RELAY_BACKEND_URL: https://relay.example.com
+  NEXT_PUBLIC_WEBAUTHN_RP_ID: localhost
+  NEXT_PUBLIC_FACTORY_CONTRACT_ID: CCCAMWJOF7IYTVCU7SR6HFTNH5XRMDMWPYN464NY5BCKUPMUM64RZ5CH
+  NEXT_PUBLIC_POLICY_CONTRACT_ID: CCDM3O2SXX3E24MCWLRK5YBVQHJCA4OQKJFF6KWCK6FHZS65DGMT6DOY
+  NEXT_PUBLIC_SOROBAN_RPC_URL: https://soroban-testnet.stellar.org
+  NEXT_PUBLIC_STELLAR_NETWORK_PASSPHRASE: "Test SDF Network ; September 2015"
+  SESSION_SECRET: ci-secret-do-not-use-in-production-xxxxxxxxxxxxxxxx
 
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
-    
+
     steps:
-    - uses: actions/checkout@v4
-    
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20'
-        
-    - name: Setup pnpm
-      uses: pnpm/action-setup@v3
-      with:
-        version: 9
-        
-    - name: Install dependencies
-      run: pnpm install
-      
-    - name: Typecheck
-      run: pnpm tsc --noEmit
-      
-    - name: Lint
-      run: pnpm lint
-      
-    - name: Component Tests
-      run: pnpm test --run
-      
-    - name: Install Playwright Browsers
-      run: pnpm exec playwright install --with-deps
-      
-    - name: Run E2E Tests
-      run: pnpm test:e2e
+      - uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck
+        run: pnpm tsc --noEmit
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Build
+        run: pnpm build
+
+      - name: Unit Tests
+        run: pnpm test --run
+
+      - name: Install Playwright Browsers
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: E2E Tests
+        run: pnpm test:e2e --project=chromium
