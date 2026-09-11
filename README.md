@@ -9,7 +9,7 @@
   </p>
 
   <p>
-    <a href="https://guardian-wallet-web.vercel.app">
+    <a href="https://web-guardian-wallet.vercel.app/">
       <img alt="Live on Vercel" src="https://img.shields.io/badge/vercel-deployed-black?logo=vercel&logoColor=white&style=flat-square" />
     </a>
     <img alt="Next.js 16" src="https://img.shields.io/badge/Next.js-16-black?logo=nextdotjs&style=flat-square" />
@@ -28,7 +28,7 @@
   </p>
 
   <p>
-    <a href="https://rayos-stellar-frontend.vercel.app"><strong>🚀 Live Demo</strong></a> ·
+    <a href="https://web-guardian-wallet.vercel.app"><strong>🚀 Live Demo</strong></a> ·
     <a href="docs/SETUP.md"><strong>📖 Setup Guide</strong></a> ·
     <a href="docs/ARCHITECTURE.md"><strong>🏛️ Architecture</strong></a> ·
     <a href="docs/CONTRIBUTING.md"><strong>🤝 Contributing</strong></a> ·
