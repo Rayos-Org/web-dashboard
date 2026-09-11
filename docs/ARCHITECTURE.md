@@ -57,7 +57,7 @@ Guardian Wallet is split across four repositories. This repo — `web-dashboard`
 | Session | JWT in httpOnly cookie via `jose` | Stateless, secure, short-lived (2h) |
 | Wallet SDK | `@rayos/wallet-sdk` | Soroban contract interactions, passkey signing |
 | Fonts | Geist Sans + Geist Mono | Clean, modern, numeric-friendly |
-| Accent colour | `#D97706` (Amber 600) | Single-token brand, legible on both light/dark |
+| Accent colour | `#4F46E5` (Indigo 600), `#6D6AF7` on dark | Matches the logo; dark theme is the default via `next-themes` |
 | Deployment | Vercel | Zero-config Next.js, edge runtime, preview deployments |
 | Package manager | pnpm | Fast, disk-efficient, strict peer dep resolution |
 

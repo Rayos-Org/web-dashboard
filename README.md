@@ -105,7 +105,8 @@ Guardian Wallet is built across four repositories. Here's how they connect:
 - Timelock and approval status polled in real time
 
 ### 🎨 UI / UX
-- Dark + light mode, Geist Sans + Geist Mono, Amber accent (`#D97706`)
+- Dark mode by default (animated light/dark switch), Geist Sans + Geist Mono, Indigo accent (`#4F46E5` / `#6D6AF7` on dark)
+- Motion-driven landing page (aurora backdrop, scroll reveals, 3-D tilt cards) built with `motion`
 - Skeleton loaders, empty states with clear CTAs, toast notifications
 - Responsive — works on mobile and desktop
 
