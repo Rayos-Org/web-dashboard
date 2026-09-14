@@ -89,14 +89,14 @@ Guardian Wallet is built across four repositories. Here's how they connect:
 - Every sensitive action (send, set policy, add guardian) requires a fresh passkey assertion
 
 ### 💸 Send & Receive XLM
-- Live balance from the Soroban smart contract via `@rayos/wallet-sdk`
-- Real-time transaction history from the Stellar Horizon API with icons, amounts, and explorer links
-- Account funding via Stellar Friendbot (testnet)
+- Live balance and signers read from the wallet contract over Soroban RPC via `@rayos/wallet-sdk`
+- Transaction history from Soroban contract events (native token `transfer`s) with direction, amounts and explorer links
+- One-tap testnet funding through the relay faucet (the relay's sponsor account sends XLM to the contract)
+- Sends are passkey-signed Soroban auth entries: the wallet contract verifies the WebAuthn signature on-chain, the relay only pays the fee
 
-### 🛡️ On-Chain Spend Policies
-- **Spend Limits** — rolling per-time-window XLM cap enforced by the contract's policy module
-- **Session Keys** — ephemeral sub-keys scoped to specific contracts, authorized with a passkey signature
-- **Contract Allow-List** — whitelist of Stellar contracts the wallet can interact with
+### 🛡️ Spend Policies & Guardians (preview)
+- **Spend Limits**, **Session Keys** and **Contract Allow-List** screens are wired to the policy contract's interface but are shown as *previews* — the policy contract is not yet linked to the wallet's `__check_auth`, so the UI is deliberately read-only rather than pretending to sign
+- **Guardians** lists the wallet's live on-chain signers; adding guardians / recovery ships with the recovery module
 
 ### 👥 Social Recovery
 - Configure trusted guardian signers with configurable weights (M-of-N threshold)
@@ -132,7 +132,7 @@ web-dashboard/
 │   ├── useWallet.ts          ← Wallet state, send transaction
 │   ├── usePolicies.ts        ← Session keys CRUD
 │   ├── useRecovery.ts        ← Recovery proposal lifecycle
-│   └── useTransactions.ts    ← Horizon API: history, account status
+│   └── useTransactions.ts    ← SDK: transfer history (Soroban events), tx status
 │
 ├── lib/                      ← Shared utilities
 │   ├── auth.ts               ← JWT session (jose)
@@ -177,10 +177,13 @@ sequenceDiagram
     User-->>UI: Biometric confirmation
     UI->>BE: POST /webauthn/register/verify
     BE-->>UI: Credential verified ✓
-    UI->>SDK: createWallet(options, saltBytes)
-    SDK->>Chain: Deploy GuardianWallet contract
-    Chain-->>SDK: Wallet address
-    SDK-->>UI: { address, credential }
+    UI->>SDK: registerPasskey(options) → P-256 public key
+    UI->>SDK: deployWallet(credential, salt)
+    SDK->>BE: POST /relay/deploy
+    BE->>Chain: WalletFactory.deploy_wallet (sponsor pays)
+    Chain-->>BE: txHash
+    BE-->>SDK: { walletAddress, txHash }
+    SDK-->>UI: { address, txHash }
     UI->>UI: loginAction() → sets JWT cookie
     UI->>User: Redirect to /wallet dashboard
 ```
@@ -217,19 +220,17 @@ sequenceDiagram
     participant Chain as Stellar Testnet
 
     User->>UI: Click Send, enter recipient + amount
-    UI->>BE: POST /webauthn/assert/options
-    BE-->>UI: Signing challenge
-    UI->>User: Passkey prompt
-    User-->>UI: Signed assertion
-    UI->>SDK: signAndSubmit(xdr, { challenge, credentialId })
-    SDK->>BE: POST /relay/submit (signed XDR)
-    BE->>Chain: Submit sponsored transaction
+    UI->>SDK: transfer({ walletAddress, to, amount, credentialId })
+    SDK->>Chain: simulate token.transfer → wallet auth entry
+    SDK->>User: Passkey prompt (challenge = auth-entry hash)
+    User-->>SDK: WebAuthn assertion
+    SDK->>SDK: put authenticatorData/clientDataJSON/signature in the auth entry
+    SDK->>BE: POST /relay/submit (passkey-signed XDR)
+    BE->>Chain: re-simulate (contract runs __check_auth), sign envelope, submit
     Chain-->>BE: txHash
-    BE-->>SDK: { hash, status: "pending" }
+    BE-->>SDK: { txHash, status }
     SDK-->>UI: SubmitTransactionResponse
-    UI->>BE: GET /relay/status/:txHash (polling)
-    BE-->>UI: { status: "success" }
-    UI->>User: ✓ Transaction confirmed
+    UI->>User: ✓ Real transaction hash + Stellar Expert link
 ```
 
 ---
@@ -256,7 +257,7 @@ graph TB
         Dashboard --> Hooks["hooks/* — React Query"]
         Hooks --> SDK["@rayos/wallet-sdk"]
         Hooks --> APIProxy["app/api/* — Route Handlers"]
-        Hooks --> Horizon["Horizon API (tx history)"]
+        Hooks --> RPC["Soroban RPC (balance, signers, events)"]
     end
 
     subgraph Backend["☁️ relay-backend (NestJS · Render)"]
@@ -276,7 +277,7 @@ graph TB
     APIProxy -->|HTTP JSON| Backend
     SDK -->|Soroban XDR + RPC| Contracts
     RL -->|Signed XDR| Contracts
-    Horizon -->|REST| Contracts
+    RPC -->|JSON-RPC| Contracts
 ```
 
 ---
@@ -349,7 +350,7 @@ pnpm dev
 
 | Variable | Description |
 |---|---|
-| `NEXT_PUBLIC_RELAY_BACKEND_URL` | URL of the deployed relay-backend |
+| `NEXT_PUBLIC_RELAY_BACKEND_URL` | relay-backend URL **including `/api`** (browser calls go through `app/api/*` proxies, so this is server-side only in practice) |
 | `NEXT_PUBLIC_WEBAUTHN_RP_ID` | Your domain (must match exactly — use `localhost` for dev) |
 | `NEXT_PUBLIC_FACTORY_CONTRACT_ID` | Stellar wallet factory contract address |
 | `NEXT_PUBLIC_POLICY_CONTRACT_ID` | Stellar policy module contract address |

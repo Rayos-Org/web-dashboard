@@ -93,9 +93,23 @@ Files live in `tests/`:
 
 ```
 tests/
-├── onboarding.spec.ts    # Registration and login flows
-└── example.spec.ts       # Smoke tests (delete once real tests cover the same ground)
+├── onboarding.spec.ts    # Onboarding UI (runs offline, all browsers)
+└── testnet-flow.spec.ts  # Real testnet flow: create → faucet → passkey-signed send → re-login
 ```
+
+### Real testnet flow (`testnet-flow.spec.ts`)
+
+Drives the dashboard against a **live relay and Stellar testnet** using Chrome's
+virtual authenticator (CDP `WebAuthn` domain), so the passkey ceremony, the
+factory deploy, the faucet, the contract-verified send and the re-login are all
+genuine. It is skipped unless opted in:
+
+```bash
+# relay-backend running (see its .env.example) and .env pointing at it
+E2E_TESTNET=1 pnpm test:e2e --project=chromium tests/testnet-flow.spec.ts
+```
+
+It asserts the send's transaction hash reports `SUCCESS` on Soroban RPC.
 
 ### Configuration
 

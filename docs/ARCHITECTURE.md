@@ -103,10 +103,10 @@ web-dashboard/
 │   │   └── button.tsx, card.tsx, dialog.tsx, badge.tsx, ...
 │   │
 │   ├── wallet/
-│   │   ├── BalanceCard.tsx           ← Live XLM balance, account status, Friendbot link
+│   │   ├── BalanceCard.tsx           ← Live contract balance, deployed/unfunded state, relay faucet
 │   │   ├── QuickSend.tsx             ← Send dialog: recipient, amount, passkey signing
 │   │   ├── SignersCard.tsx           ← On-chain passkey signer list with weights
-│   │   ├── TransactionList.tsx       ← Real ops feed from Horizon API
+│   │   ├── TransactionList.tsx       ← Native-token transfers from Soroban RPC events
 │   │   └── PasskeyPrompt.tsx         ← Reusable biometric prompt UI
 │   │
 │   ├── policies/
@@ -124,7 +124,7 @@ web-dashboard/
 │   ├── useWallet.ts                  ← getWalletState, sendTransaction, formatXLM
 │   ├── usePolicies.ts                ← useSessionKeys, useCreateSessionKey, useRevokeSessionKey
 │   ├── useRecovery.ts                ← useRecoveryProposal, useProposeRecovery, useApproveRecovery
-│   └── useTransactions.ts           ← Horizon API: useTransactions, useTransactionStatus, useAccountExists
+│   └── useTransactions.ts           ← SDK: useTransactions (events), useTransactionStatus
 │
 ├── lib/
 │   ├── auth.ts                       ← JWT encrypt/decrypt, createSession, getSession, destroySession
@@ -179,8 +179,8 @@ The browser never calls the relay-backend directly. All backend calls go through
 ### JWT sessions, not re-authentication
 After WebAuthn assertion succeeds, a short-lived JWT (2h) is stored in an `httpOnly`, `secure`, `SameSite=lax` cookie. Subsequent page loads read the cookie — the user is not prompted for their passkey on every navigation.
 
-### Horizon API for transaction history
-The relay-backend does not expose a transaction history endpoint (it only handles relay submission). On-chain transaction history is fetched directly from the **Stellar Horizon REST API** (`horizon-testnet.stellar.org`) from the browser — this is public data requiring no authentication.
+### Soroban RPC for wallet state and history
+The relay-backend does not expose balance or history endpoints. The SDK reads the wallet contract's `get_signers`, the native token's `balance(wallet)` and the token's `transfer` events straight from **Soroban RPC** in the browser — public data, no authentication. Horizon is not used because contract wallets (`C…` addresses) are not Horizon accounts.
 
 ### Zero mock data in production paths
 A firm project rule: no `setTimeout` fakes, no hardcoded addresses, no dummy signatures. Mocking is allowed only in test files (`__tests__/`, `vitest.setup.ts`).
@@ -239,7 +239,7 @@ hooks/* (useWallet, usePolicies, …)
      │                                        ▼
      │                                  relay-backend
      │
-     └──── Horizon calls ─────────────► horizon-testnet.stellar.org
+     └──── Soroban RPC ───────────────► soroban-testnet.stellar.org
                                         (transaction history, account status)
 ```
 
