@@ -1,26 +1,42 @@
 "use client";
 
-import { useWallet, NATIVE_XLM_CONTRACT_ID, formatXLM } from "@/hooks/useWallet";
-import { useAccountExists } from "@/hooks/useTransactions";
+import { useWallet, useFaucet, formatXLM } from "@/hooks/useWallet";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { QuickSend } from "./QuickSend";
-import { Copy, ArrowDownLeft, AlertTriangle, ExternalLink } from "lucide-react";
+import { Copy, ArrowDownLeft, AlertTriangle, ExternalLink, Droplets, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
-export function BalanceCard({ walletAddress }: { walletAddress: string }) {
-  const { data, isLoading, isError } = useWallet(walletAddress);
-  const { data: accountExists, isLoading: checkingAccount } = useAccountExists(walletAddress);
+interface BalanceCardProps {
+  walletAddress: string;
+  credentialId: string;
+}
 
-  const balance = data?.balances?.[NATIVE_XLM_CONTRACT_ID];
+export function BalanceCard({ walletAddress, credentialId }: BalanceCardProps) {
+  const { data, isLoading, isError } = useWallet(walletAddress);
+  const faucet = useFaucet();
+
+  const balance = data?.balance ?? 0n;
+  const unfunded = !!data && data.balance === 0n;
   const shortAddress = `${walletAddress.slice(0, 8)}…${walletAddress.slice(-6)}`;
 
   const copyAddress = () => {
     navigator.clipboard.writeText(walletAddress);
     toast.success("Address copied");
+  };
+
+  const requestFaucet = async () => {
+    try {
+      const res = await faucet.mutateAsync(walletAddress);
+      toast.success("Testnet XLM received", {
+        description: `${Number(res.amount) / 1e7} XLM · tx ${res.txHash.slice(0, 10)}…`,
+      });
+    } catch (err: any) {
+      toast.error(err?.message || "Faucet request failed");
+    }
   };
 
   return (
@@ -37,12 +53,17 @@ export function BalanceCard({ walletAddress }: { walletAddress: string }) {
           <CardTitle className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
             Balance · Testnet
           </CardTitle>
-          {!checkingAccount && accountExists === false && (
+          {data && !data.exists && (
             <Badge variant="destructive" className="text-xs gap-1">
-              <AlertTriangle className="h-3 w-3" /> Unfunded
+              <AlertTriangle className="h-3 w-3" /> Not deployed
             </Badge>
           )}
-          {!checkingAccount && accountExists && (
+          {data?.exists && unfunded && (
+            <Badge variant="outline" className="border-warning/40 bg-warning/10 text-warning">
+              Unfunded
+            </Badge>
+          )}
+          {data?.exists && !unfunded && (
             <Badge variant="outline" className="border-success/40 bg-success/10 text-success">
               <span className="size-1.5 rounded-full bg-success" /> Active
             </Badge>
@@ -59,7 +80,7 @@ export function BalanceCard({ walletAddress }: { walletAddress: string }) {
         ) : isError ? (
           <div>
             <p className="text-2xl font-bold text-muted-foreground">—</p>
-            <p className="text-xs text-destructive mt-1">Failed to load balance</p>
+            <p className="text-xs text-destructive mt-1">Couldn&apos;t read the wallet contract from Soroban RPC</p>
           </div>
         ) : (
           <div>
@@ -77,40 +98,47 @@ export function BalanceCard({ walletAddress }: { walletAddress: string }) {
             <Copy />
           </Button>
           <a
-            href={`https://stellar.expert/explorer/testnet/account/${walletAddress}`}
+            href={`https://stellar.expert/explorer/testnet/contract/${walletAddress}`}
             target="_blank"
             rel="noopener noreferrer"
             className="flex size-8.5 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-primary"
-            title="View on explorer"
+            title="View contract on explorer"
             aria-label="View on explorer"
           >
             <ExternalLink className="size-4" />
           </a>
         </div>
 
-        {!checkingAccount && accountExists === false && (
+        {data?.exists && unfunded && (
           <Alert className="border-warning/40 bg-warning/10 text-foreground">
-            <AlertTriangle className="text-warning" />
-            <AlertDescription className="text-sm">
-              Fund this address on{" "}
-              <a
-                href={`https://friendbot.stellar.org?addr=${walletAddress}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="underline font-medium"
-              >
-                Stellar Friendbot
-              </a>{" "}
-              to activate your wallet.
+            <Droplets className="text-warning" />
+            <AlertDescription className="text-sm flex flex-wrap items-center gap-x-3 gap-y-2">
+              <span>Your smart wallet is live but empty. Grab some testnet XLM to try a send.</span>
+              <Button size="sm" variant="outline" onClick={requestFaucet} disabled={faucet.isPending}>
+                {faucet.isPending ? (
+                  <>
+                    <Loader2 className="animate-spin" data-icon="inline-start" /> Funding…
+                  </>
+                ) : (
+                  <>
+                    <Droplets data-icon="inline-start" /> Get testnet XLM
+                  </>
+                )}
+              </Button>
             </AlertDescription>
           </Alert>
         )}
 
         <div className="flex gap-3">
-          <QuickSend walletAddress={walletAddress} />
+          <QuickSend walletAddress={walletAddress} credentialId={credentialId} disabled={!data?.exists || unfunded} />
           <Button variant="outline" className="flex-1" onClick={copyAddress}>
             <ArrowDownLeft data-icon="inline-start" /> Receive
           </Button>
+          {data?.exists && !unfunded && (
+            <Button variant="ghost" size="icon" onClick={requestFaucet} disabled={faucet.isPending} title="Get more testnet XLM">
+              {faucet.isPending ? <Loader2 className="animate-spin" /> : <Droplets />}
+            </Button>
+          )}
         </div>
       </CardContent>
     </Card>

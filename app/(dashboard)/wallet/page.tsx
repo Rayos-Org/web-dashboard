@@ -14,7 +14,7 @@ export default async function WalletPage() {
       <PageHeader title="Wallet" description="Your balances and on-chain activity." />
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <BalanceCard walletAddress={session.walletAddress} />
+        <BalanceCard walletAddress={session.walletAddress} credentialId={session.credentialId} />
         <SignersCard walletAddress={session.walletAddress} />
       </div>
 

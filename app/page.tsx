@@ -111,7 +111,7 @@ const steps = [
     icon: Send,
     title: "Receive and send assets",
     description:
-      "Fund via Friendbot or receive XLM from anyone. Sign outgoing transactions with one tap of your fingerprint.",
+      "Fund from the testnet faucet or receive XLM from anyone. Every outgoing transfer is signed by your passkey and verified by the wallet contract on-chain.",
   },
   {
     step: "04",
@@ -125,7 +125,7 @@ const steps = [
 const faqs = [
   {
     q: "Do I need XLM to create a wallet?",
-    a: "No. The gasless relay funds the initial contract deployment and your early transactions. You can fund your wallet later via Stellar's Friendbot on testnet.",
+    a: "No. The gasless relay funds the initial contract deployment and your early transactions. On testnet, the dashboard's faucet button sends test XLM straight to your wallet contract.",
   },
   {
     q: "What happens if I lose my device?",

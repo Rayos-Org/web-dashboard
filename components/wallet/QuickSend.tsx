@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useWallet } from "@/hooks/useWallet";
+import { useSendTransaction, isStellarAddress, toStroops } from "@/hooks/useWallet";
 import { useTransactionStatus } from "@/hooks/useTransactions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,64 +19,57 @@ import { Badge } from "@/components/ui/badge";
 import { PasskeyPrompt } from "./PasskeyPrompt";
 import { ArrowUpRight, CheckCircle2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { startAuthentication } from "@simplewebauthn/browser";
 
 interface QuickSendProps {
   walletAddress: string;
+  credentialId: string;
+  disabled?: boolean;
 }
 
-export function QuickSend({ walletAddress }: QuickSendProps) {
+/**
+ * Send XLM from the smart wallet. The SDK builds the Soroban transfer, the
+ * passkey signs the wallet's authorisation entry (contract-verified WebAuthn
+ * signature), and the relay pays the fee. The hash shown is the real one.
+ */
+export function QuickSend({ walletAddress, credentialId, disabled }: QuickSendProps) {
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState<"form" | "passkey" | "submitted">("form");
   const [recipient, setRecipient] = useState("");
   const [amount, setAmount] = useState("");
-  const [isProcessing, setIsProcessing] = useState(false);
   const [txHash, setTxHash] = useState<string | undefined>();
 
-  const { sendTransaction } = useWallet(walletAddress);
+  const send = useSendTransaction();
   const { data: txStatus } = useTransactionStatus(txHash);
 
-  const handleSendRequest = () => {
-    if (!recipient.trim() || !amount.trim()) return;
-    setStep("passkey");
-  };
+  const recipientValid = isStellarAddress(recipient);
+  const amountValid = (() => {
+    try {
+      return amount.trim() !== "" && toStroops(amount) > 0n;
+    } catch {
+      return false;
+    }
+  })();
 
   const executeSend = async () => {
-    setIsProcessing(true);
+    setStep("passkey");
     try {
-      // 1. Get assertion options from backend to sign the transaction
-      const optsRes = await fetch("/api/webauthn/assert/options", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userHandle: walletAddress }),
+      const result = await send.mutateAsync({
+        walletAddress,
+        credentialId,
+        to: recipient.trim(),
+        amount: amount.trim(),
       });
-      if (!optsRes.ok) throw new Error("Failed to get assertion options");
-      const options = await optsRes.json();
-
-      // 2. Browser prompts user — real passkey interaction
-      const assertionResponse = await startAuthentication(options);
-
-      // 3. Submit signed transaction through the SDK
-      // The SDK builds the XDR from the wallet address, recipient and amount,
-      // signs it with the assertion, and submits via relay.
-      const result = await sendTransaction.mutateAsync({
-        xdr: JSON.stringify({ to: recipient, amount, asset: "native" }), // SDK encodes this
-        challenge: options.challenge,
-        credentialId: assertionResponse.id,
-      });
-
-      setTxHash(result.hash);
+      setTxHash(result.txHash);
       setStep("submitted");
-      toast.success("Transaction submitted to relay");
+      toast.success("Transaction confirmed on Stellar testnet");
     } catch (err: any) {
-      toast.error(err.message || "Failed to send transaction");
+      toast.error(err?.message || "Failed to send transaction");
       setStep("form");
-    } finally {
-      setIsProcessing(false);
     }
   };
 
   const handleClose = (v: boolean) => {
+    if (!v && send.isPending) return;
     setOpen(v);
     if (!v) {
       setTimeout(() => {
@@ -90,15 +83,17 @@ export function QuickSend({ walletAddress }: QuickSendProps) {
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogTrigger render={
-        <Button className="flex-1">
-          <ArrowUpRight data-icon="inline-start" /> Send
-        </Button>
-      } />
+      <DialogTrigger
+        render={
+          <Button className="flex-1" disabled={disabled}>
+            <ArrowUpRight data-icon="inline-start" /> Send
+          </Button>
+        }
+      />
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Send XLM</DialogTitle>
-          <DialogDescription>Send XLM to any Stellar address.</DialogDescription>
+          <DialogDescription>Send XLM to any Stellar account (G…) or contract (C…) on testnet.</DialogDescription>
         </DialogHeader>
 
         {step === "form" && (
@@ -107,10 +102,11 @@ export function QuickSend({ walletAddress }: QuickSendProps) {
               <Label htmlFor="recipient">Recipient Address</Label>
               <Input
                 id="recipient"
-                placeholder="G..."
+                placeholder="G… or C…"
                 value={recipient}
-                onChange={(e) => setRecipient(e.target.value)}
+                onChange={(e) => setRecipient(e.target.value.toUpperCase())}
                 className="font-mono text-sm"
+                aria-invalid={recipient.length > 0 && !recipientValid}
               />
             </div>
             <div className="space-y-2">
@@ -125,12 +121,18 @@ export function QuickSend({ walletAddress }: QuickSendProps) {
                 onChange={(e) => setAmount(e.target.value)}
               />
             </div>
+            <p className="text-xs text-muted-foreground">
+              You&apos;ll confirm with your passkey. The relay sponsors the network fee.
+            </p>
           </div>
         )}
 
         {step === "passkey" && (
           <div className="py-4">
-            <PasskeyPrompt isProcessing={isProcessing} message="Sign this transaction with your passkey" />
+            <PasskeyPrompt
+              isProcessing
+              message="Sign this transaction with your passkey, then we submit it to Stellar…"
+            />
           </div>
         )}
 
@@ -140,17 +142,18 @@ export function QuickSend({ walletAddress }: QuickSendProps) {
               <CheckCircle2 className="size-8" />
             </div>
             <div>
-              <p className="font-semibold text-lg">Submitted!</p>
-              <p className="text-sm text-muted-foreground mt-1">Your transaction is being relayed.</p>
+              <p className="font-semibold text-lg">Sent {amount} XLM</p>
+              <p className="text-sm text-muted-foreground mt-1">Verified on-chain by your wallet contract.</p>
             </div>
             {txHash && (
               <div className="w-full">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm text-muted-foreground">Status</span>
                   <Badge variant={txStatus?.status === "success" ? "default" : "secondary"}>
-                    {txStatus?.status ?? "pending"}
+                    {txStatus?.status ?? "success"}
                   </Badge>
                 </div>
+                <code className="block text-xs font-mono break-all text-muted-foreground mb-2">{txHash}</code>
                 <a
                   href={`https://stellar.expert/explorer/testnet/tx/${txHash}`}
                   target="_blank"
@@ -166,26 +169,19 @@ export function QuickSend({ walletAddress }: QuickSendProps) {
 
         <DialogFooter>
           {step === "form" && (
-            <Button
-              onClick={handleSendRequest}
-              disabled={!recipient.trim() || !amount.trim()}
-              className="w-full"
-            >
-              Continue
+            <Button onClick={executeSend} disabled={!recipientValid || !amountValid} className="w-full">
+              Sign & Send
             </Button>
           )}
           {step === "passkey" && (
-            <div className="flex gap-2 w-full">
-              <Button variant="ghost" onClick={() => setStep("form")} disabled={isProcessing} className="flex-1">
-                Back
-              </Button>
-              <Button onClick={executeSend} disabled={isProcessing} className="flex-1">
-                {isProcessing ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Signing…</> : "Sign & Send"}
-              </Button>
-            </div>
+            <Button disabled className="w-full">
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" /> Waiting for signature…
+            </Button>
           )}
           {step === "submitted" && (
-            <Button onClick={() => handleClose(false)} variant="outline" className="w-full">Close</Button>
+            <Button onClick={() => handleClose(false)} variant="outline" className="w-full">
+              Close
+            </Button>
           )}
         </DialogFooter>
       </DialogContent>

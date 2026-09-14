@@ -1,62 +1,28 @@
 "use client";
 
-import { useTransactions, HorizonOperation } from "@/hooks/useTransactions";
+import { useTransactions } from "@/hooks/useTransactions";
+import { formatXLM } from "@/hooks/useWallet";
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Separator } from "@/components/ui/separator";
 import { ArrowUpRight, ArrowDownLeft, RefreshCw, Clock } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 
-function operationIcon(type: string, walletAddress: string, from?: string) {
-  const isSend = from === walletAddress;
-  switch (type) {
-    case "payment":
-      return isSend ? (
-        <ArrowUpRight className="h-4 w-4 text-destructive" />
-      ) : (
-        <ArrowDownLeft className="h-4 w-4 text-success" />
-      );
-    case "create_account":
-      return <ArrowDownLeft className="h-4 w-4 text-success" />;
-    default:
-      return <RefreshCw className="h-4 w-4 text-muted-foreground" />;
-  }
+function shortAddr(a: string) {
+  return `${a.slice(0, 6)}…${a.slice(-4)}`;
 }
 
-function operationLabel(op: HorizonOperation, walletAddress: string): string {
-  switch (op.type) {
-    case "payment":
-      return op.from === walletAddress ? `Sent to ${op.to?.slice(0, 8)}…` : `Received from ${op.from?.slice(0, 8)}…`;
-    case "create_account":
-      return "Account Created";
-    case "change_trust":
-      return "Trust Line Changed";
-    case "set_options":
-      return "Options Updated";
-    default:
-      return op.type.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
-  }
-}
-
-function operationAmount(op: HorizonOperation): string | null {
-  const amount = op.amount || op.starting_balance;
-  if (!amount) return null;
-  const code = op.asset_code || (op.asset_type === "native" ? "XLM" : op.asset_type ?? "");
-  return `${parseFloat(amount).toLocaleString(undefined, { maximumFractionDigits: 4 })} ${code}`;
-}
-
+/** Native-token transfers touching the wallet, straight from Soroban RPC events. */
 export function TransactionList({ walletAddress }: { walletAddress: string }) {
-  const { data: txs, isLoading, isError, refetch } = useTransactions(walletAddress);
+  const { data: txs, isLoading, isError, refetch, isRefetching } = useTransactions(walletAddress);
 
   return (
     <Card>
       <CardHeader className="border-b pb-5">
         <CardTitle>Recent Activity</CardTitle>
         <CardAction>
-          <Button variant="outline" size="sm" onClick={() => refetch()} title="Refresh">
-            <RefreshCw data-icon="inline-start" /> Refresh
+          <Button variant="outline" size="sm" onClick={() => refetch()} title="Refresh" disabled={isRefetching}>
+            <RefreshCw data-icon="inline-start" className={isRefetching ? "animate-spin" : ""} /> Refresh
           </Button>
         </CardAction>
       </CardHeader>
@@ -78,48 +44,52 @@ export function TransactionList({ walletAddress }: { walletAddress: string }) {
 
         {isError && (
           <div className="py-10 text-center text-sm text-destructive">
-            Failed to load activity. Check your connection.
+            Failed to load activity from Soroban RPC. Check your connection.
           </div>
         )}
 
         {!isLoading && !isError && txs && txs.length === 0 && (
           <div className="flex flex-col items-center justify-center py-12 text-center text-muted-foreground">
-            <div className="mb-4 flex size-14 items-center justify-center rounded-full bg-muted"><Clock className="size-6 opacity-50" /></div>
+            <div className="mb-4 flex size-14 items-center justify-center rounded-full bg-muted">
+              <Clock className="size-6 opacity-50" />
+            </div>
             <p className="font-medium">No activity yet</p>
-            <p className="text-sm mt-1">Transactions will appear here once your wallet is funded.</p>
+            <p className="text-sm mt-1">Fund the wallet with testnet XLM and send your first transaction.</p>
           </div>
         )}
 
         {!isLoading && txs && txs.length > 0 && (
           <div className="divide-y">
-            {txs.map((op, i) => {
-              const isSend = op.from === walletAddress;
-              const amount = operationAmount(op);
+            {txs.map((t) => {
+              const isOut = t.direction === "out";
               return (
-                <div key={op.id} className="flex items-center gap-4 px-6 py-4 transition-colors hover:bg-muted/30">
-                  <div className={`flex size-10 shrink-0 items-center justify-center rounded-full ring-1 ${
-                    op.type === "payment" && isSend
-                      ? "bg-destructive/10 ring-destructive/20"
-                      : "bg-success/10 ring-success/20"
-                  }`}>
-                    {operationIcon(op.type, walletAddress, op.from)}
+                <div key={t.txHash + t.ledger} className="flex items-center gap-4 px-6 py-4 transition-colors hover:bg-muted/30">
+                  <div
+                    className={`flex size-10 shrink-0 items-center justify-center rounded-full ring-1 ${
+                      isOut ? "bg-destructive/10 ring-destructive/20" : "bg-success/10 ring-success/20"
+                    }`}
+                  >
+                    {isOut ? (
+                      <ArrowUpRight className="h-4 w-4 text-destructive" />
+                    ) : (
+                      <ArrowDownLeft className="h-4 w-4 text-success" />
+                    )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">{operationLabel(op, walletAddress)}</p>
+                    <p className="text-sm font-medium truncate">
+                      {isOut ? `Sent to ${shortAddr(t.to)}` : `Received from ${shortAddr(t.from)}`}
+                    </p>
                     <p className="text-xs text-muted-foreground">
-                      {formatDistanceToNow(new Date(op.created_at), { addSuffix: true })}
+                      {formatDistanceToNow(new Date(t.at), { addSuffix: true })} · ledger {t.ledger}
                     </p>
                   </div>
                   <div className="text-right shrink-0">
-                    {amount && (
-                      <span className={`text-sm font-semibold ${
-                        op.type === "payment" && isSend ? "text-destructive" : "text-success"
-                      }`}>
-                        {op.type === "payment" && isSend ? "−" : "+"}{amount}
-                      </span>
-                    )}
+                    <span className={`text-sm font-semibold ${isOut ? "text-destructive" : "text-success"}`}>
+                      {isOut ? "−" : "+"}
+                      {formatXLM(t.amount)} XLM
+                    </span>
                     <a
-                      href={`https://stellar.expert/explorer/testnet/tx/${op.transaction_hash}`}
+                      href={`https://stellar.expert/explorer/testnet/tx/${t.txHash}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="block text-xs text-muted-foreground hover:text-primary transition-colors mt-0.5"

@@ -22,7 +22,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { PasskeyPrompt } from "@/components/wallet/PasskeyPrompt";
-import { startAuthentication } from "@simplewebauthn/browser";
+import { walletSdk } from "@/lib/sdk-client";
 
 export function SessionKeyList({ walletAddress }: { walletAddress: string }) {
   const { data: sessions, isLoading } = useSessionKeys(walletAddress);
@@ -59,8 +59,8 @@ export function SessionKeyList({ walletAddress }: { walletAddress: string }) {
       if (!optsRes.ok) throw new Error("Failed to get assertion options");
       const options = await optsRes.json();
 
-      // User authenticates with their passkey — produces a real signature
-      const assertionResponse = await startAuthentication(options);
+      // User authenticates with their passkey — a real WebAuthn signature over the relay challenge
+      const assertionResponse = await walletSdk.getAssertion({ challenge: options.challenge, rpId: options.rpId });
 
       const expiresAt = new Date(
         Date.now() + parseInt(expiryHours) * 60 * 60 * 1000

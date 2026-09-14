@@ -1,18 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { walletSdk } from "@/lib/sdk-client";
 import { NATIVE_XLM_CONTRACT_ID } from "@/hooks/useWallet";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { toast } from "sonner";
-import { ShieldCheck, Loader2 } from "lucide-react";
-import { PasskeyPrompt } from "@/components/wallet/PasskeyPrompt";
-import { startAuthentication } from "@simplewebauthn/browser";
-import { Buffer } from "buffer";
+import { Info } from "lucide-react";
 
 const WINDOWS = [
   { label: "1 Hour", value: "3600" },
@@ -20,116 +17,92 @@ const WINDOWS = [
   { label: "7 Days", value: "604800" },
 ];
 
+const POLICY_CONTRACT = process.env.NEXT_PUBLIC_POLICY_CONTRACT_ID ?? "";
+
+/**
+ * Spend limits live in the on-chain PolicyModule (`set_spend_limit`). The
+ * testnet deployment of that contract is owner-gated to the deployer key, so
+ * per-wallet limits can't be written from the app yet. This screen previews
+ * the configuration honestly instead of pretending to submit it.
+ */
 export function SpendLimitForm({ walletAddress }: { walletAddress: string }) {
-  const [token] = useState(NATIVE_XLM_CONTRACT_ID);
   const [amount, setAmount] = useState("");
   const [window, setWindow] = useState("86400");
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [showPasskey, setShowPasskey] = useState(false);
-  const [saved, setSaved] = useState(false);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!amount) return;
-
-    setShowPasskey(true);
-    setIsProcessing(true);
-
-    try {
-      // Get assertion options for the passkey signing step
-      const optsRes = await fetch("/api/webauthn/assert/options", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userHandle: walletAddress }),
-      });
-      if (!optsRes.ok) throw new Error("Failed to get passkey options");
-      const options = await optsRes.json();
-
-      // User authenticates
-      const assertionResponse = await startAuthentication(options);
-
-      // Create session key via SDK with the spend limit encoded
-      await walletSdk.createSessionKey(walletAddress, {
-        publicKey: new Uint8Array(Buffer.from(assertionResponse.response.authenticatorData, "base64")),
-        expiresAt: Math.floor(Date.now() / 1000) + parseInt(window),
-        spendLimit: {
-          assetContract: token,
-          amount: BigInt(Math.round(parseFloat(amount) * 10_000_000)), // stroops
-          timeframeSeconds: parseInt(window),
-        },
-      });
-
-      setSaved(true);
-      setAmount("");
-      toast.success("Spend limit set on-chain");
-    } catch (err: any) {
-      toast.error(err.message || "Failed to set spend limit");
-    } finally {
-      setIsProcessing(false);
-      setShowPasskey(false);
-    }
-  };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <Card>
-        <CardHeader className="border-b pb-6">
-          <CardTitle>Set Spend Limit</CardTitle>
-          <CardDescription>
-            Configure a rolling cap enforced by the smart contract policy module.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-5">
-          {showPasskey ? (
-            <PasskeyPrompt isProcessing={isProcessing} message="Sign policy update with your passkey…" />
-          ) : (
-            <>
-              <div className="space-y-2">
-                <Label>Asset</Label>
-                <Select value={token} items={{ [NATIVE_XLM_CONTRACT_ID]: "XLM (Native)" }} disabled>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value={NATIVE_XLM_CONTRACT_ID}>XLM (Native)</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>Limit Amount (XLM)</Label>
-                <Input
-                  type="number"
-                  placeholder="100.00"
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-                  min="0.01"
-                  step="0.01"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Time Window</Label>
-                <Select value={window} onValueChange={(v) => v && setWindow(v)} items={WINDOWS}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {WINDOWS.map((w) => (
-                      <SelectItem key={w.value} value={w.value}>{w.label}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </>
-          )}
-        </CardContent>
-        <CardFooter>
-          {!showPasskey && (
-            <Button type="submit" size="lg" disabled={!amount || isProcessing} className="w-full">
-              {isProcessing ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Setting…</> : "Set Spend Limit"}
-            </Button>
-          )}
-        </CardFooter>
-      </Card>
-    </form>
+    <Card>
+      <CardHeader className="border-b pb-6">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <CardTitle>Spend Limit</CardTitle>
+            <CardDescription>A rolling cap enforced by the on-chain policy module.</CardDescription>
+          </div>
+          <Badge variant="outline" className="border-warning/40 bg-warning/10 text-warning shrink-0">
+            Preview
+          </Badge>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-5">
+        <Alert>
+          <Info />
+          <AlertDescription className="text-sm">
+            The policy contract on testnet (
+            <a
+              href={`https://stellar.expert/explorer/testnet/contract/${POLICY_CONTRACT}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline"
+            >
+              {POLICY_CONTRACT.slice(0, 8)}…
+            </a>
+            ) is owner-gated in its current release, so per-wallet limits for{" "}
+            <code className="font-mono text-xs">{walletAddress.slice(0, 8)}…</code> can&apos;t be written from here yet.
+            Sends are still passkey-verified on-chain by your wallet contract.
+          </AlertDescription>
+        </Alert>
+        <div className="space-y-2">
+          <Label>Asset</Label>
+          <Select value={NATIVE_XLM_CONTRACT_ID} items={{ [NATIVE_XLM_CONTRACT_ID]: "XLM (Native)" }} disabled>
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={NATIVE_XLM_CONTRACT_ID}>XLM (Native)</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-2">
+          <Label>Limit Amount (XLM)</Label>
+          <Input
+            type="number"
+            placeholder="100.00"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            min="0.01"
+            step="0.01"
+          />
+        </div>
+        <div className="space-y-2">
+          <Label>Time Window</Label>
+          <Select value={window} onValueChange={(v) => v && setWindow(v)} items={WINDOWS}>
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {WINDOWS.map((w) => (
+                <SelectItem key={w.value} value={w.value}>
+                  {w.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </CardContent>
+      <CardFooter>
+        <Button type="button" size="lg" disabled className="w-full" title="Requires the next PolicyModule release">
+          Set Spend Limit — available in the next contract release
+        </Button>
+      </CardFooter>
+    </Card>
   );
 }

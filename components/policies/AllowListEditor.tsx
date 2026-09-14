@@ -11,7 +11,6 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Shield, ShieldOff, Plus, X, Info, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { PasskeyPrompt } from "@/components/wallet/PasskeyPrompt";
-import { startAuthentication } from "@simplewebauthn/browser";
 
 // The allow-list is an on-chain policy.
 // We do real passkey signing for every mutation.
@@ -24,16 +23,10 @@ export function AllowListEditor({ walletAddress }: { walletAddress: string }) {
   const [showPasskey, setShowPasskey] = useState(false);
   const [pendingAction, setPendingAction] = useState<"toggle" | "add" | "remove" | null>(null);
 
-  const sign = async (): Promise<string> => {
-    const optsRes = await fetch("/api/webauthn/assert/options", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userHandle: walletAddress }),
-    });
-    if (!optsRes.ok) throw new Error("Failed to get passkey options");
-    const options = await optsRes.json();
-    const assertion = await startAuthentication(options);
-    return assertion.response.signature;
+  // The PolicyModule's `set_allow_list` is owner-gated in the current testnet
+  // release, so this editor is a local preview: nothing is claimed to be on-chain.
+  const sign = async (): Promise<void> => {
+    void walletAddress;
   };
 
   const runWithPasskey = async (label: string, action: () => Promise<void>) => {
@@ -57,7 +50,7 @@ export function AllowListEditor({ walletAddress }: { walletAddress: string }) {
       // SDK call: sdk.policy.set_allow_list_enabled(checked)
       // This would be wired to the contract once the SDK exposes this method.
       setIsEnabled(checked);
-      toast.success(`Allow-list ${checked ? "enabled" : "disabled"}`);
+      toast.info(`Allow-list ${checked ? "enabled" : "disabled"} (preview — not yet on-chain)`);
     });
   };
 
@@ -77,7 +70,7 @@ export function AllowListEditor({ walletAddress }: { walletAddress: string }) {
       await sign();
       setAddresses((prev) => [...prev, trimmed]);
       setNewAddress("");
-      toast.success("Address added to allow-list");
+      toast.info("Address added to allow-list (preview — not yet on-chain)");
     });
   };
 
@@ -86,16 +79,20 @@ export function AllowListEditor({ walletAddress }: { walletAddress: string }) {
     await runWithPasskey("remove address", async () => {
       await sign();
       setAddresses((prev) => prev.filter((a) => a !== address));
-      toast.success("Address removed from allow-list");
+      toast.info("Address removed from allow-list (preview — not yet on-chain)");
     });
   };
 
   return (
     <Card>
       <CardHeader className="border-b pb-6">
-        <CardTitle>Contract Allow-List</CardTitle>
+        <CardTitle>
+          Contract Allow-List{" "}
+          <Badge variant="outline" className="ml-1 border-warning/40 bg-warning/10 text-warning align-middle">Preview</Badge>
+        </CardTitle>
         <CardDescription>
-          Restrict wallet to only interact with approved Stellar contracts.
+          Restrict the wallet to approved contracts. The testnet policy contract is owner-gated, so this is a local
+          preview until the next contract release.
         </CardDescription>
         <CardAction>
           <div className="flex items-center gap-3 rounded-xl border border-border bg-muted/40 px-3 py-2">

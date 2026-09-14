@@ -1,7 +1,6 @@
 "use client";
 
 import { useWallet } from "@/hooks/useWallet";
-import { Buffer } from "buffer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
@@ -28,11 +27,11 @@ export function SignersCard({ walletAddress }: { walletAddress: string }) {
         )}
         {!isLoading && signers.length === 0 && (
           <div className="py-6 text-center text-sm text-muted-foreground">
-            No signers data available.
+            Wallet contract not found on-chain yet.
           </div>
         )}
         {!isLoading && signers.map((s, i) => {
-          const hex = Buffer.from(s.publicKeyBytes).toString("hex").slice(0, 16) + "…";
+          const hex = Array.from(s.publicKeyBytes.slice(1, 9), (b) => b.toString(16).padStart(2, "0")).join("") + "…";
           return (
             <div key={i} className="flex items-center justify-between rounded-xl border border-border bg-muted/30 p-3.5 transition-colors hover:bg-muted/50">
               <div className="flex items-center gap-3">
@@ -40,8 +39,8 @@ export function SignersCard({ walletAddress }: { walletAddress: string }) {
                   <KeyRound className="size-4" />
                 </div>
                 <div>
-                  <p className="font-mono text-sm">{hex}</p>
-                  <p className="mt-0.5 text-xs text-muted-foreground">Passkey signer</p>
+                  <p className="font-mono text-sm" title={`P-256 public key ${hex}`}>{s.credentialId.slice(0, 18)}…</p>
+                  <p className="mt-0.5 text-xs text-muted-foreground">Passkey credential · P-256</p>
                 </div>
               </div>
               <Badge variant="outline" className="text-xs">

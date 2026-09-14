@@ -4,15 +4,11 @@ import { useQuery } from "@tanstack/react-query";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ShieldAlert, Loader2 } from "lucide-react";
+import { ShieldAlert } from "lucide-react";
 import { toast } from "sonner";
-import { useState } from "react";
-import { startAuthentication } from "@simplewebauthn/browser";
 import type { RecoveryProposalStatus } from "@/hooks/useRecovery";
 
 export function RecoveryStatusBanner({ walletAddress }: { walletAddress: string }) {
-  const [isCancelling, setIsCancelling] = useState(false);
-
   // Query the backend for any active recovery proposals on this wallet
   const { data: activeProposal, isLoading } = useQuery({
     queryKey: ["active-recovery", walletAddress],
@@ -27,24 +23,10 @@ export function RecoveryStatusBanner({ walletAddress }: { walletAddress: string 
     refetchInterval: 30_000,
   });
 
-  const handleCancel = async () => {
-    setIsCancelling(true);
-    try {
-      const optsRes = await fetch("/api/webauthn/assert/options", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userHandle: walletAddress }),
-      });
-      if (!optsRes.ok) throw new Error("Failed to get passkey options");
-      const options = await optsRes.json();
-      await startAuthentication(options);
-      // SDK call: walletSdk.cancelRecovery(walletAddress, activeProposal.proposalId)
-      toast.success("Recovery proposal cancelled");
-    } catch (err: any) {
-      toast.error(err.message || "Failed to cancel recovery");
-    } finally {
-      setIsCancelling(false);
-    }
+  // Cancelling a proposal calls the PolicyModule (owner-gated on testnet);
+  // until that ships, the banner is informational only.
+  const handleCancel = () => {
+    toast.info("Cancel recovery lands with the next PolicyModule release");
   };
 
   if (isLoading || !activeProposal) return null;
@@ -69,11 +51,9 @@ export function RecoveryStatusBanner({ walletAddress }: { walletAddress: string 
         <Button
           variant="destructive"
           onClick={handleCancel}
-          disabled={isCancelling}
           className="shrink-0"
         >
-          {isCancelling ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
-          {isCancelling ? "Cancelling…" : "Cancel Recovery"}
+          Cancel Recovery
         </Button>
       </div>
     </Alert>

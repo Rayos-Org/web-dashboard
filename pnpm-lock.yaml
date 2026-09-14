@@ -12,8 +12,8 @@ importers:
         specifier: ^1.8.0
         version: 1.8.0(@types/react@19.3.0)(date-fns@4.4.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       '@rayos/wallet-sdk':
-        specifier: ^0.1.1
-        version: 0.1.1(debug@4.4.3(supports-color@7.2.0))(supports-color@7.2.0)
+        specifier: file:vendor/rayos-wallet-sdk-0.2.0.tgz
+        version: file:vendor/rayos-wallet-sdk-0.2.0.tgz(debug@4.4.3(supports-color@7.2.0))(supports-color@7.2.0)
       '@simplewebauthn/browser':
         specifier: ^14.0.0
         version: 14.0.0
@@ -72,6 +72,9 @@ importers:
       '@playwright/test':
         specifier: ^1.63.0
         version: 1.63.0
+      '@stellar/stellar-sdk':
+        specifier: ^17.0.1
+        version: 17.0.1(debug@4.4.3(supports-color@7.2.0))(supports-color@7.2.0)
       '@tailwindcss/postcss':
         specifier: ^4
         version: 4.3.3
@@ -732,8 +735,9 @@ packages:
     engines: {node: '>=20'}
     hasBin: true
 
-  '@rayos/wallet-sdk@0.1.1':
-    resolution: {integrity: sha512-mPmfw/6hRMD5YP2wjTUPjs04qD4+o5Nrnp7poz9EkOPPu/JkVkphvCJhWrC76CmiYpifmKcaLdPybSZ6DYM6yg==}
+  '@rayos/wallet-sdk@file:vendor/rayos-wallet-sdk-0.2.0.tgz':
+    resolution: {integrity: sha512-NRH8neJQ7kVznPHIKDW5uXYjytKI4PjfHJ0w6BbYk/5zG7wXM+UcicVkvWOYufsG7aAX0wMgxDhZFlXgBY8D8Q==, tarball: file:vendor/rayos-wallet-sdk-0.2.0.tgz}
+    version: 0.2.0
     engines: {node: '>=24'}
 
   '@rolldown/binding-android-arm-eabi@1.2.8':
@@ -4392,7 +4396,7 @@ snapshots:
     dependencies:
       playwright: 1.63.0
 
-  '@rayos/wallet-sdk@0.1.1(debug@4.4.3(supports-color@7.2.0))(supports-color@7.2.0)':
+  '@rayos/wallet-sdk@file:vendor/rayos-wallet-sdk-0.2.0.tgz(debug@4.4.3(supports-color@7.2.0))(supports-color@7.2.0)':
     dependencies:
       '@simplewebauthn/browser': 14.0.0
       '@stellar/stellar-sdk': 17.0.1(debug@4.4.3(supports-color@7.2.0))(supports-color@7.2.0)
