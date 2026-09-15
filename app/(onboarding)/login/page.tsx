@@ -52,6 +52,7 @@ export default function LoginPage() {
       const { walletAddress } = await walletRes.json();
 
       await loginAction(walletAddress, assertion.id);
+      router.push("/wallet");
     } catch (err: any) {
       console.error(err);
       toast.error(err?.message || "Login failed");

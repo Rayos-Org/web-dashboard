@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { walletSdk } from "@/lib/sdk-client";
 import { loginAction } from "@/app/actions/auth";
 import { Button } from "@/components/ui/button";
@@ -23,6 +24,7 @@ type Phase = "idle" | "passkey" | "deploying";
  *   4. relay deploys a GuardianWallet contract on Stellar testnet for that passkey
  */
 export default function CreateWalletPage() {
+  const router = useRouter();
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [name, setName] = useState("");
   const [phase, setPhase] = useState<Phase>("idle");
@@ -87,6 +89,7 @@ export default function CreateWalletPage() {
   const handleFinish = async () => {
     setSigningIn(true);
     await loginAction(walletAddress, credentialId);
+    router.push("/wallet");
   };
 
   const copyAddress = () => {
