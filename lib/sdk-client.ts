@@ -10,5 +10,5 @@ export const walletSdk = new WalletSdk({
   rpcUrl: config.NEXT_PUBLIC_SOROBAN_RPC_URL,
   relayUrl: "/api",
   factoryContractId: config.NEXT_PUBLIC_FACTORY_CONTRACT_ID,
-  rpId: config.NEXT_PUBLIC_WEBAUTHN_RP_ID,
+  rpId: typeof window !== 'undefined' ? window.location.hostname : config.NEXT_PUBLIC_WEBAUTHN_RP_ID,
 });

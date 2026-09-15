@@ -43,7 +43,11 @@ export default function CreateWalletPage() {
       const optsRes = await fetch("/api/webauthn/register/options", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userHandle, userName: name.trim() }),
+        body: JSON.stringify({
+          userHandle,
+          userName: name.trim(),
+          rpId: window.location.hostname,
+        }),
       });
       if (!optsRes.ok) throw new Error("Relay is unreachable — could not fetch registration options");
       const options = await optsRes.json();

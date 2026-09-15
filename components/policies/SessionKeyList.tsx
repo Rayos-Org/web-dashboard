@@ -54,7 +54,10 @@ export function SessionKeyList({ walletAddress }: { walletAddress: string }) {
       const optsRes = await fetch("/api/webauthn/assert/options", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userHandle: walletAddress }),
+        body: JSON.stringify({ 
+          userHandle: walletAddress,
+          rpId: window.location.hostname
+        }),
       });
       if (!optsRes.ok) throw new Error("Failed to get assertion options");
       const options = await optsRes.json();

@@ -43,7 +43,11 @@ export default function RecoverWalletPage() {
       const optsRes = await fetch("/api/webauthn/register/options", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userHandle, userName: `Recovery Key for ${addr.slice(0, 8)}…` }),
+        body: JSON.stringify({ 
+          userHandle, 
+          userName: `Recovery Key for ${addr.slice(0, 8)}…`,
+          rpId: window.location.hostname
+        }),
       });
       if (!optsRes.ok) throw new Error("Failed to get registration options");
       const regOptions = await optsRes.json();
