@@ -87,9 +87,15 @@ export default function CreateWalletPage() {
   };
 
   const handleFinish = async () => {
-    setSigningIn(true);
-    await loginAction(walletAddress, credentialId);
-    router.push("/wallet");
+    try {
+      setSigningIn(true);
+      await loginAction(walletAddress, credentialId);
+      router.push("/wallet");
+    } catch (err: any) {
+      console.error("Login action failed:", err);
+      toast.error(err.message || "Failed to sign in");
+      setSigningIn(false);
+    }
   };
 
   const copyAddress = () => {
