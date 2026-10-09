@@ -23,7 +23,12 @@ export function GuardianList({ walletAddress }: { walletAddress: string }) {
   return (
     <Card>
       <CardHeader className="border-b pb-6">
-        <CardTitle>Recovery Guardians</CardTitle>
+        <div className="flex items-center gap-2.5">
+          <CardTitle>Recovery Guardians</CardTitle>
+          <Badge variant="outline" className="border-amber-500/40 bg-amber-500/10 text-amber-500 font-medium">
+            Coming Soon
+          </Badge>
+        </div>
         <CardDescription>Trusted signers who can authorize wallet recovery — read live from your wallet contract.</CardDescription>
         <CardAction>
           <Button disabled title="Guardian management ships with the next PolicyModule release">
@@ -43,12 +48,21 @@ export function GuardianList({ walletAddress }: { walletAddress: string }) {
           </Badge>
         </div>
 
-        <Alert>
-          <Info />
+        <Alert className="border-amber-500/30 bg-amber-500/5">
+          <Info className="text-amber-500 shrink-0" />
           <AlertDescription className="text-sm">
-            Guardian add/remove and recovery execution go through the PolicyModule, whose testnet deployment is
+            <span className="font-semibold text-foreground">Coming Soon:</span> Guardian add/remove and recovery execution go through the PolicyModule, whose testnet deployment is
             owner-gated. The recovery <em>proposal</em> flow (Lost device → Recover) and guardian approvals are live
-            on the relay; on-chain execution lands with the next contract release.
+            on the relay; on-chain execution lands with the next contract release. Track status on{" "}
+            <a
+              href="https://github.com/Rayos-Org/web-dashboard/issues"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 font-medium text-primary underline underline-offset-4 hover:text-primary/80"
+            >
+              GitHub Tracking Issues
+              <ExternalLink className="inline h-3 w-3" />
+            </a>.
           </AlertDescription>
         </Alert>
 

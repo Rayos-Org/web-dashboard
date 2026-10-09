@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Info } from "lucide-react";
+import { Info, ExternalLink } from "lucide-react";
 
 const WINDOWS = [
   { label: "1 Hour", value: "3600" },
@@ -37,16 +37,21 @@ export function SpendLimitForm({ walletAddress }: { walletAddress: string }) {
             <CardTitle>Spend Limit</CardTitle>
             <CardDescription>A rolling cap enforced by the on-chain policy module.</CardDescription>
           </div>
-          <Badge variant="outline" className="border-warning/40 bg-warning/10 text-warning shrink-0">
-            Preview
-          </Badge>
+          <div className="flex items-center gap-2 shrink-0">
+            <Badge variant="outline" className="border-warning/40 bg-warning/10 text-warning">
+              Preview
+            </Badge>
+            <Badge variant="outline" className="border-amber-500/40 bg-amber-500/10 text-amber-500 font-medium">
+              Coming Soon
+            </Badge>
+          </div>
         </div>
       </CardHeader>
       <CardContent className="space-y-5">
-        <Alert>
-          <Info />
+        <Alert className="border-amber-500/30 bg-amber-500/5">
+          <Info className="text-amber-500 shrink-0" />
           <AlertDescription className="text-sm">
-            The policy contract on testnet (
+            <span className="font-semibold text-foreground">Coming Soon:</span> The policy contract on testnet (
             <a
               href={`https://stellar.expert/explorer/testnet/contract/${POLICY_CONTRACT}`}
               target="_blank"
@@ -57,7 +62,16 @@ export function SpendLimitForm({ walletAddress }: { walletAddress: string }) {
             </a>
             ) is owner-gated in its current release, so per-wallet limits for{" "}
             <code className="font-mono text-xs">{walletAddress.slice(0, 8)}…</code> can&apos;t be written from here yet.
-            Sends are still passkey-verified on-chain by your wallet contract.
+            Sends are still passkey-verified on-chain by your wallet contract. Track status on{" "}
+            <a
+              href="https://github.com/Rayos-Org/web-dashboard/issues"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 font-medium text-primary underline underline-offset-4 hover:text-primary/80"
+            >
+              GitHub Tracking Issues
+              <ExternalLink className="inline h-3 w-3" />
+            </a>.
           </AlertDescription>
         </Alert>
         <div className="space-y-2">
@@ -100,7 +114,7 @@ export function SpendLimitForm({ walletAddress }: { walletAddress: string }) {
       </CardContent>
       <CardFooter>
         <Button type="button" size="lg" disabled className="w-full" title="Requires the next PolicyModule release">
-          Set Spend Limit — available in the next contract release
+          Set Spend Limit — Coming Soon in next contract release
         </Button>
       </CardFooter>
     </Card>
