@@ -1,4 +1,94 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { walletSdk } from "@/lib/sdk-client";
+import { NATIVE_XLM_CONTRACT_ID } from "@/hooks/useWallet";
+import type { SpendLimit } from "@rayos/wallet-sdk";
+
+export type { SpendLimit };
+
+// On-Chain Spend Limits
+export function useSpendLimit(walletAddress?: string, tokenAddress: string = NATIVE_XLM_CONTRACT_ID) {
+  return useQuery({
+    queryKey: ["spend-limit", walletAddress, tokenAddress],
+    queryFn: async () => {
+      if (!walletAddress) return null;
+      return walletSdk.getSpendLimit(walletAddress, tokenAddress);
+    },
+    enabled: !!walletAddress,
+    staleTime: 30_000,
+  });
+}
+
+export function useSetSpendLimit() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (params: {
+      walletAddress: string;
+      tokenAddress: string;
+      amount: bigint;
+      windowSecs: bigint;
+      credentialId: string;
+    }) => {
+      return walletSdk.setSpendLimit(params);
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: ["spend-limit", variables.walletAddress, variables.tokenAddress],
+      });
+    },
+  });
+}
+
+// On-Chain Guardian Policy
+export function useAddGuardian() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (params: {
+      walletAddress: string;
+      guardianAddress: string;
+      credentialId: string;
+    }) => {
+      return walletSdk.addGuardian(params);
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["wallet", variables.walletAddress] });
+      queryClient.invalidateQueries({ queryKey: ["guardians", variables.walletAddress] });
+    },
+  });
+}
+
+export function useRemoveGuardian() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (params: {
+      walletAddress: string;
+      guardianAddress: string;
+      credentialId: string;
+    }) => {
+      return walletSdk.removeGuardian(params);
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["wallet", variables.walletAddress] });
+      queryClient.invalidateQueries({ queryKey: ["guardians", variables.walletAddress] });
+    },
+  });
+}
+
+export function useCancelRecovery() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (params: {
+      walletAddress: string;
+      proposalId: bigint;
+      credentialId: string;
+    }) => {
+      return walletSdk.cancelRecovery(params);
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["active-recovery", variables.walletAddress] });
+      queryClient.invalidateQueries({ queryKey: ["recovery"] });
+    },
+  });
+}
 
 // Types matching the backend schemas exactly
 export interface SessionKey {

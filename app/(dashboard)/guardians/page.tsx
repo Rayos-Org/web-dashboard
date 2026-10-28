@@ -18,9 +18,9 @@ export default async function GuardiansPage() {
         description="Manage your recovery guardians and view active recovery proposals."
       />
 
-      <RecoveryStatusBanner walletAddress={session.walletAddress} />
+      <RecoveryStatusBanner walletAddress={session.walletAddress} credentialId={session.credentialId} />
 
-      <GuardianList walletAddress={session.walletAddress} />
+      <GuardianList walletAddress={session.walletAddress} credentialId={session.credentialId} />
     </div>
   );
 }

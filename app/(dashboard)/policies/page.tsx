@@ -39,7 +39,7 @@ export default async function PoliciesPage() {
           </TabsTrigger>
         </TabsList>
         <TabsContent value="spend-limits">
-          <SpendLimitForm walletAddress={session.walletAddress} />
+          <SpendLimitForm walletAddress={session.walletAddress} credentialId={session.credentialId} />
         </TabsContent>
         <TabsContent value="session-keys">
           <SessionKeyList walletAddress={session.walletAddress} />

@@ -736,9 +736,9 @@ packages:
     hasBin: true
 
   '@rayos/wallet-sdk@file:vendor/rayos-wallet-sdk-0.2.0.tgz':
-    resolution: {integrity: sha512-NRH8neJQ7kVznPHIKDW5uXYjytKI4PjfHJ0w6BbYk/5zG7wXM+UcicVkvWOYufsG7aAX0wMgxDhZFlXgBY8D8Q==, tarball: file:vendor/rayos-wallet-sdk-0.2.0.tgz}
+    resolution: {integrity: sha512-LsY7bHFBfdYxta2nrqU0Z7GvsmOo+yx+T+O29Dp7UEU1q/IaXNW/CgNHiRCs7OxPXYtiWAPa0wGrNzczr1FQTA==, tarball: file:vendor/rayos-wallet-sdk-0.2.0.tgz}
     version: 0.2.0
-    engines: {node: '>=24'}
+    engines: {node: '>=22.13.0'}
 
   '@rolldown/binding-android-arm-eabi@1.2.8':
     resolution: {integrity: sha512-tN5aztYkKCte4i5SIrrz5yK/HMjEuCqCSCJa418jOV8tZ1cBY3YF2otxB1ktPxzsLA1BeTqwapK0bfjxNvHJVw==}

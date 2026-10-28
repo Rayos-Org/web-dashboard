@@ -4,17 +4,22 @@ import { useQuery } from "@tanstack/react-query";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ShieldAlert } from "lucide-react";
+import { ShieldAlert, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import type { RecoveryProposalStatus } from "@/hooks/useRecovery";
+import { useCancelRecovery } from "@/hooks/usePolicies";
 
-export function RecoveryStatusBanner({ walletAddress }: { walletAddress: string }) {
+export function RecoveryStatusBanner({
+  walletAddress,
+  credentialId,
+}: {
+  walletAddress: string;
+  credentialId?: string;
+}) {
   // Query the backend for any active recovery proposals on this wallet
   const { data: activeProposal, isLoading } = useQuery({
     queryKey: ["active-recovery", walletAddress],
     queryFn: async (): Promise<RecoveryProposalStatus | null> => {
-      // The backend surfaces the latest proposal when queried with walletAddress as the proposalId fallback.
-      // In production this would be an indexed query. For now we check by walletAddress.
       const res = await fetch(`/api/recovery/status?walletAddress=${encodeURIComponent(walletAddress)}`);
       if (!res.ok) return null; // 404 = no active proposal
       return res.json();
@@ -23,10 +28,30 @@ export function RecoveryStatusBanner({ walletAddress }: { walletAddress: string 
     refetchInterval: 30_000,
   });
 
-  // Cancelling a proposal calls the PolicyModule (owner-gated on testnet);
-  // until that ships, the banner is informational only.
-  const handleCancel = () => {
-    toast.info("Cancel recovery lands with the next PolicyModule release");
+  const cancelMutation = useCancelRecovery();
+
+  const handleCancel = async () => {
+    if (!activeProposal) return;
+    if (!credentialId) {
+      toast.error("Passkey credential required to cancel recovery. Please log in again.");
+      return;
+    }
+
+    try {
+      toast.info("Please verify the passkey prompt to cancel recovery...");
+      const res = await cancelMutation.mutateAsync({
+        walletAddress,
+        proposalId: BigInt(activeProposal.proposalId),
+        credentialId,
+      });
+      toast.success("Recovery proposal cancelled on-chain", {
+        description: `Tx: ${res.txHash.slice(0, 10)}...`,
+      });
+    } catch (err: any) {
+      toast.error("Failed to cancel recovery", {
+        description: err?.message || "An unexpected error occurred",
+      });
+    }
   };
 
   if (isLoading || !activeProposal) return null;
@@ -41,8 +66,7 @@ export function RecoveryStatusBanner({ walletAddress }: { walletAddress: string 
         <div>
           <AlertTitle className="text-base mb-0.5">Active Recovery in Progress</AlertTitle>
           <AlertDescription>
-            A recovery request for this wallet is pending.
-            {" "}
+            A recovery request for this wallet is pending.{" "}
             <Badge variant="outline" className="ml-1 border-destructive/40 text-destructive">
               {approvalsCount} approval{approvalsCount !== 1 ? "s" : ""}
             </Badge>
@@ -51,9 +75,17 @@ export function RecoveryStatusBanner({ walletAddress }: { walletAddress: string 
         <Button
           variant="destructive"
           onClick={handleCancel}
+          disabled={cancelMutation.isPending}
           className="shrink-0"
         >
-          Cancel Recovery
+          {cancelMutation.isPending ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Cancelling...
+            </>
+          ) : (
+            "Cancel Recovery"
+          )}
         </Button>
       </div>
     </Alert>
